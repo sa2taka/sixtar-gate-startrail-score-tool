@@ -46,6 +46,7 @@ func TestResult_FormatJSON(t *testing.T) {
 	expectedFields := []string{
 		"file_path",
 		"mod_time",
+		"kind",
 		"title",
 		"difficulty",
 		"mode",
@@ -67,6 +68,7 @@ func TestResult_FormatTSV(t *testing.T) {
 	result := &Result{
 		FilePath:   "test.jpg",
 		ModTime:    now,
+		Kind:       "Result",
 		Title:      "Test Song",
 		Difficulty: "comet",
 		Mode:       "solar",
@@ -88,7 +90,7 @@ func TestResult_FormatTSV(t *testing.T) {
 	fields := strings.Split(tsv, "\t")
 
 	// フィールド数の確認
-	expectedFields := 13 // ファイルパス、更新日時、タイトル、難易度、スコア、6つの判定、フルコンボ、オプション
+	expectedFields := 14 // ファイルパス、更新日時、画面種別、タイトル、難易度、スコア、6つの判定、フルコンボ、オプション
 	if len(fields) != expectedFields {
 		t.Errorf("TSVのフィールド数が不正です: got %d, want %d", len(fields), expectedFields)
 	}
@@ -97,11 +99,14 @@ func TestResult_FormatTSV(t *testing.T) {
 	if fields[0] != "test.jpg" {
 		t.Errorf("ファイルパスが不正です: got %s, want test.jpg", fields[0])
 	}
-	if fields[2] != "Test Song" {
-		t.Errorf("タイトルが不正です: got %s, want Test Song", fields[2])
+	if fields[2] != "Result" {
+		t.Errorf("画面種別が不正です: got %s, want Result", fields[2])
 	}
-	if fields[3] != "comet" {
-		t.Errorf("難易度が不正です: got %s, want comet", fields[3])
+	if fields[3] != "Test Song" {
+		t.Errorf("タイトルが不正です: got %s, want Test Song", fields[3])
+	}
+	if fields[4] != "comet" {
+		t.Errorf("難易度が不正です: got %s, want comet", fields[4])
 	}
 }
 
@@ -112,6 +117,7 @@ func TestHeaderTSV(t *testing.T) {
 	expectedFields := []string{
 		"ファイルパス",
 		"更新日時",
+		"画面種別",
 		"楽曲タイトル",
 		"難易度",
 		"スコア",

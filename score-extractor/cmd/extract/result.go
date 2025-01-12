@@ -21,6 +21,8 @@ type Result struct {
 	FilePath string `json:"file_path"`
 	// ファイルの更新日時
 	ModTime time.Time `json:"mod_time"`
+	// 画面種別
+	Kind string `json:"kind"`
 	// 楽曲タイトル
 	Title string `json:"title"`
 	// 難易度
@@ -57,6 +59,12 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 	musicInfoList, err := music_info.LoadMusicData(musicInfoPath)
 	if err != nil {
 		return nil, fmt.Errorf("楽曲情報の読み込みに失敗（%s）: %w", musicInfoPath, err)
+	}
+
+	// 画面種別を判定
+	kind, err := extract.JudgeKind(img)
+	if err != nil {
+		return nil, fmt.Errorf("画面種別の判定に失敗: %w", err)
 	}
 
 	// 画像から情報を抽出
@@ -108,6 +116,7 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 	result := &Result{
 		FilePath:    filePath,
 		ModTime:     modTime,
+		Kind:        string(kind),
 		Title:       summary.Title.Name,
 		Score:       summary.Score,
 		IsFullCombo: summary.IsFullCombo,
@@ -161,9 +170,10 @@ func (r *Result) FormatTSV() string {
 	options := strings.Join(r.Options, ",")
 
 	// TSV形式の文字列を生成
-	return fmt.Sprintf("%s\t%s\t%s\t%s\t%d\t%s\t%v\t%s",
+	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%d\t%s\t%v\t%s",
 		r.FilePath,
 		r.ModTime.Format(time.RFC3339),
+		r.Kind,
 		r.Title,
 		r.Difficulty,
 		r.Score,
@@ -178,6 +188,7 @@ func HeaderTSV() string {
 	return strings.Join([]string{
 		"ファイルパス",
 		"更新日時",
+		"画面種別",
 		"楽曲タイトル",
 		"難易度",
 		"スコア",
