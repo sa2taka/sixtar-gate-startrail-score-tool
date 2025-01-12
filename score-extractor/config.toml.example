@@ -1,0 +1,7 @@
+# APIサーバーの設定
+[api]
+port = 6433  # デフォルトポート
+
+# スクリーンショット監視の設定
+[monitoring]
+directory = "./screenshots"  # スクリーンショットが保存されているディレクトリ

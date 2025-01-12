@@ -16,6 +16,7 @@ SIXTAR GATE STARTRAILのリザルト画面のスクリーンショットから�
 - 抽出した情報は以下の形式で出力できます：
   - JSON形式
   - TSV形式
+  - HTTP API（APIサーバーモード）
 
 ## 必要なもの（WIP）
 
@@ -40,6 +41,8 @@ SIXTAR GATE STARTRAILのリザルト画面のスクリーンショットから�
 
 ## 使い方
 
+### コマンドラインモード
+
 ```bash
 # 単一の画像ファイルから情報を抽出（JSON形式で出力）
 score-extractor extract image.jpg
@@ -55,6 +58,34 @@ score-extractor extract --format tsv --ext jpg,png ./screenshots/
 
 # 指定時刻以降に作成されたファイルのみを対象
 score-extractor extract --since 2024-01-01T00:00:00 ./screenshots/
+```
+
+### APIサーバーモード
+
+APIサーバーモードでは、HTTPエンドポイントを通じてスコア情報を取得できます。
+
+1. 設定ファイルの準備
+```toml
+# config.toml
+[api]
+port = 6433  # デフォルトポート
+
+[monitoring]
+directory = "./screenshots"  # スクリーンショットが保存されているディレクトリ
+```
+
+2. サーバーの起動
+```bash
+score-extractor serve --config config.toml
+```
+
+3. APIの利用
+```bash
+# 全てのスコアデータを取得
+curl http://localhost:6433/api/v1/scores
+
+# 特定の日時以降のスコアデータを取得（コマンドラインの--sinceと同様）
+curl http://localhost:6433/api/v1/scores?since=2024-01-01T00:00:00Z
 ```
 
 ## 出力例
@@ -85,10 +116,14 @@ score-extractor extract --since 2024-01-01T00:00:00 ./screenshots/
 
 ## オプション
 
+### extractコマンド
 - `--format`：出力フォーマットを指定（json/tsv、デフォルト：json）
 - `--ext`：処理対象とする拡張子を指定（カンマ区切り、デフォルト：jpg,jpeg,png）
 - `--since`：指定時刻以降に作成されたファイルのみを処理（形式：2006-01-02T15:04:05）
 - `--verbose`：詳細なログを出力
+
+### serveコマンド
+- `--config`：設定ファイルのパスを指定（必須）
 
 ## 注意事項
 
