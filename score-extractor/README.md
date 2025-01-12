@@ -52,6 +52,9 @@ score-extractor extract --format tsv ./screenshots/
 
 # 特定の拡張子のファイルのみを対象
 score-extractor extract --format tsv --ext jpg,png ./screenshots/
+
+# 指定時刻以降に作成されたファイルのみを対象
+score-extractor extract --since 2024-01-01T00:00:00 ./screenshots/
 ```
 
 ## 出力例
@@ -79,6 +82,13 @@ score-extractor extract --format tsv --ext jpg,png ./screenshots/
 
 ### TSV形式
 ヘッダー行付きのTSV形式で出力されます。
+
+## オプション
+
+- `--format`：出力フォーマットを指定（json/tsv、デフォルト：json）
+- `--ext`：処理対象とする拡張子を指定（カンマ区切り、デフォルト：jpg,jpeg,png）
+- `--since`：指定時刻以降に作成されたファイルのみを処理（形式：2006-01-02T15:04:05）
+- `--verbose`：詳細なログを出力
 
 ## 注意事項
 

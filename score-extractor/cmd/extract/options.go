@@ -25,7 +25,7 @@ func ParseOptions(args []string) (*Options, error) {
 
 	fs := flag.NewFlagSet("extract", flag.ContinueOnError)
 	fs.StringVar(&sinceStr, "since", "", "指定時刻以降のファイルのみを処理 (形式: 2006-01-02T15:04:05)")
-	fs.StringVar(&opts.OutputFormat, "output", "json", "出力フォーマット (json/tsv)")
+	fs.StringVar(&opts.OutputFormat, "format", "json", "出力フォーマット (json/tsv)")
 	fs.BoolVar(&opts.Verbose, "verbose", false, "詳細なログ出力")
 
 	if err := fs.Parse(args); err != nil {

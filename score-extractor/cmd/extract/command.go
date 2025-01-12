@@ -27,7 +27,12 @@ func NewCommand(opts *Options) (*Command, error) {
 
 // Run はextractコマンドのメイン処理を実行する
 func Run() error {
-	opts, err := ParseOptions(os.Args[1:])
+	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "extract" {
+		args = args[1:] // extractサブコマンドを除外
+	}
+
+	opts, err := ParseOptions(args)
 	if err != nil {
 		return newError("オプションのパースに失敗", err)
 	}

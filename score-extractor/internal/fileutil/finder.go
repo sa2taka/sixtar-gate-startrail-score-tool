@@ -41,8 +41,11 @@ func (f *ImageFinder) Find() ([]string, error) {
 		}
 
 		// 時刻によるフィルタリング
-		if !f.since.IsZero() && info.ModTime().Before(f.since) {
-			return nil
+		if !f.since.IsZero() {
+			fileTime := info.ModTime()
+			if fileTime.Before(f.since) {
+				return nil
+			}
 		}
 
 		// 拡張子によるフィルタリング
