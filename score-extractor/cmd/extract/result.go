@@ -7,6 +7,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,17 +24,17 @@ type Result struct {
 	// 楽曲タイトル
 	Title string `json:"title"`
 	// 難易度
-	Difficulty string `json:"difficulty"`
+	Difficulty string `json:"difficulty,omitempty"`
 	// モード
-	Mode string `json:"mode"`
+	Mode string `json:"mode,omitempty"`
 	// スコア
 	Score int `json:"score"`
 	// 判定
-	Judgements map[string]int `json:"judgements"`
+	Judgements map[string]int `json:"judgements,omitempty"`
 	// フルコンボかどうか
 	IsFullCombo bool `json:"is_full_combo"`
 	// オプション
-	Options []string `json:"options"`
+	Options []string `json:"options,omitempty"`
 }
 
 // ExtractResult は画像ファイルから情報を抽出する
@@ -52,9 +53,10 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 	}
 
 	// 楽曲情報を読み込む
-	musicInfoList, err := music_info.LoadMusicData("musicInformation.json")
+	musicInfoPath := filepath.Join(filepath.Dir(filePath), "..", "musicInformation.json")
+	musicInfoList, err := music_info.LoadMusicData(musicInfoPath)
 	if err != nil {
-		return nil, fmt.Errorf("楽曲情報の読み込みに失敗: %w", err)
+		return nil, fmt.Errorf("楽曲情報の読み込みに失敗（%s）: %w", musicInfoPath, err)
 	}
 
 	// 画像から情報を抽出
@@ -65,11 +67,17 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 
 	// オプション情報を文字列のスライスに変換
 	var options []string
-	if summary.Pattern != extract.UnknownPattern {
-		options = append(options, string(summary.Pattern))
+	if summary.Pattern != extract.UnknownPattern && summary.Pattern != extract.DefaultPattern {
+		opt := string(summary.Pattern)
+		if opt != "" {
+			options = append(options, opt)
+		}
 	}
-	if summary.Hazard != extract.UnknownHazard {
-		options = append(options, string(summary.Hazard))
+	if summary.Hazard != extract.UnknownHazard && summary.Hazard != extract.DefaultHazard {
+		opt := string(summary.Hazard)
+		if opt != "" {
+			options = append(options, opt)
+		}
 	}
 
 	// 判定情報をマップに変換
@@ -85,17 +93,41 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 		}
 	}
 
-	return &Result{
+	// 難易度の文字列を取得（NoDifficultの場合は空文字列）
+	difficulty := string(summary.Difficult)
+	if difficulty == string(extract.NoDifficult) {
+		difficulty = ""
+	}
+
+	// モードがunknownの場合は空文字列
+	mode := string(summary.Mode)
+	if mode == string(extract.UnknownMode) {
+		mode = ""
+	}
+
+	result := &Result{
 		FilePath:    filePath,
 		ModTime:     modTime,
 		Title:       summary.Title.Name,
-		Difficulty:  string(summary.Difficult),
-		Mode:        string(summary.Mode),
 		Score:       summary.Score,
-		Judgements:  judgements,
 		IsFullCombo: summary.IsFullCombo,
-		Options:     options,
-	}, nil
+	}
+
+	// 空でない場合のみフィールドを設定
+	if difficulty != "" {
+		result.Difficulty = difficulty
+	}
+	if mode != "" {
+		result.Mode = mode
+	}
+	if judgements != nil {
+		result.Judgements = judgements
+	}
+	if len(options) > 0 {
+		result.Options = options
+	}
+
+	return result, nil
 }
 
 // FormatJSON はJSON形式の文字列に変換する

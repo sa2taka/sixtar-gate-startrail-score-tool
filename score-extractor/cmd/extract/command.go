@@ -1,6 +1,7 @@
 package extract
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -54,27 +55,26 @@ func Run() error {
 		// ファイルの更新日時を取得
 		info, err := os.Stat(imgPath)
 		if err != nil {
-			errors = append(errors, fmt.Sprintf("%s: ファイル情報の取得に失敗: %v", imgPath, err))
+			msg := fmt.Sprintf("%s: ファイル情報の取得に失敗: %v", imgPath, err)
+			if opts.Verbose {
+				fmt.Fprintln(os.Stderr, msg)
+			}
+			errors = append(errors, msg)
 			continue
 		}
 
 		// スコアを抽出
 		result, err := ExtractResult(imgPath, info.ModTime())
 		if err != nil {
-			errors = append(errors, fmt.Sprintf("%s: スコアの抽出に失敗: %v", imgPath, err))
+			msg := fmt.Sprintf("%s: %v", imgPath, err)
+			if opts.Verbose {
+				fmt.Fprintln(os.Stderr, msg)
+			}
+			errors = append(errors, msg)
 			continue
 		}
 
 		results = append(results, result)
-	}
-
-	// エラーがあれば表示
-	if len(errors) > 0 && opts.Verbose {
-		fmt.Fprintln(os.Stderr, "\n以下のファイルの処理に失敗しました:")
-		for _, err := range errors {
-			fmt.Fprintln(os.Stderr, err)
-		}
-		fmt.Fprintln(os.Stderr)
 	}
 
 	// 結果の出力
@@ -91,6 +91,12 @@ func Run() error {
 
 	if opts.Verbose {
 		fmt.Printf("\n処理完了: %d件成功, %d件失敗\n", len(results), len(errors))
+		if len(errors) > 0 {
+			fmt.Fprintln(os.Stderr, "\n失敗したファイル:")
+			for _, err := range errors {
+				fmt.Fprintln(os.Stderr, err)
+			}
+		}
 	}
 
 	return nil
@@ -134,17 +140,10 @@ func findImageFiles(opts *Options) ([]string, error) {
 
 // outputJSON は結果をJSON形式で出力する
 func outputJSON(results []*Result) error {
-	for i, result := range results {
-		json, err := result.FormatJSON()
-		if err != nil {
-			return err
-		}
-		if i > 0 {
-			fmt.Println()
-		}
-		fmt.Println(json)
-	}
-	return nil
+	// 結果全体を配列としてJSONに変換
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+	return encoder.Encode(results)
 }
 
 // outputTSV は結果をTSV形式で出力する
