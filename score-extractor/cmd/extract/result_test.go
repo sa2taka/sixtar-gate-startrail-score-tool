@@ -16,7 +16,7 @@ func TestResult_FormatJSON(t *testing.T) {
 		Difficulty: "comet",
 		Mode:       "solar",
 		Score:      1000000,
-		Judgements: map[string]int{
+		Judgments: map[string]int{
 			"perfect":  100,
 			"great":    10,
 			"good":     5,
@@ -51,7 +51,7 @@ func TestResult_FormatJSON(t *testing.T) {
 		"difficulty",
 		"mode",
 		"score",
-		"judgements",
+		"judgments",
 		"is_full_combo",
 		"options",
 	}
@@ -73,7 +73,7 @@ func TestResult_FormatTSV(t *testing.T) {
 		Difficulty: "comet",
 		Mode:       "solar",
 		Score:      1000000,
-		Judgements: map[string]int{
+		Judgments: map[string]int{
 			"perfect":  100,
 			"great":    10,
 			"good":     5,

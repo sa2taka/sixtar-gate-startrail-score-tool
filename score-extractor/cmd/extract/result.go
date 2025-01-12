@@ -32,7 +32,7 @@ type Result struct {
 	// スコア
 	Score int `json:"score"`
 	// 判定
-	Judgements map[string]int `json:"judgements,omitempty"`
+	Judgments map[string]int `json:"judgments,omitempty"`
 	// フルコンボかどうか
 	IsFullCombo bool `json:"is_full_combo"`
 	// オプション
@@ -89,15 +89,13 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 	}
 
 	// 判定情報をマップに変換
-	var judgements map[string]int
+	var judgments map[string]int
 	if summary.Judgement != nil {
-		judgements = map[string]int{
-			"perfect":  summary.Judgement.BlueStar,
-			"great":    summary.Judgement.WhiteStar,
-			"good":     summary.Judgement.YellowStar,
-			"bad":      summary.Judgement.RedStar,
-			"miss":     0, // TODO: missの情報がない
-			"maxCombo": 0, // TODO: maxComboの情報がない
+		judgments = map[string]int{
+			"blueStar":   summary.Judgement.BlueStar,
+			"whiteStar":  summary.Judgement.WhiteStar,
+			"yellowStar": summary.Judgement.YellowStar,
+			"redStar":    summary.Judgement.RedStar,
 		}
 	}
 
@@ -129,8 +127,8 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 	if mode != "" {
 		result.Mode = mode
 	}
-	if judgements != nil {
-		result.Judgements = judgements
+	if judgments != nil {
+		result.Judgments = judgments
 	}
 	if len(options) > 0 {
 		result.Options = options
@@ -152,18 +150,16 @@ func (r *Result) FormatJSON() (string, error) {
 // ヘッダー行が必要な場合は、HeaderTSV()を使用する
 func (r *Result) FormatTSV() string {
 	// 判定情報をTSV用に変換
-	var judgements string
-	if r.Judgements != nil {
-		judgements = fmt.Sprintf("%d\t%d\t%d\t%d\t%d\t%d",
-			r.Judgements["perfect"],
-			r.Judgements["great"],
-			r.Judgements["good"],
-			r.Judgements["bad"],
-			r.Judgements["miss"],
-			r.Judgements["maxCombo"],
+	var judgments string
+	if r.Judgments != nil {
+		judgments = fmt.Sprintf("%d\t%d\t%d\t%d",
+			r.Judgments["blueStar"],
+			r.Judgments["whiteStar"],
+			r.Judgments["yellowStar"],
+			r.Judgments["redStar"],
 		)
 	} else {
-		judgements = "0\t0\t0\t0\t0\t0"
+		judgments = "0\t0\t0\t0"
 	}
 
 	// オプションをカンマ区切りの文字列に変換
@@ -177,7 +173,7 @@ func (r *Result) FormatTSV() string {
 		r.Title,
 		r.Difficulty,
 		r.Score,
-		judgements,
+		judgments,
 		r.IsFullCombo,
 		options,
 	)
@@ -192,12 +188,10 @@ func HeaderTSV() string {
 		"楽曲タイトル",
 		"難易度",
 		"スコア",
-		"PERFECT",
-		"GREAT",
-		"GOOD",
-		"BAD",
-		"MISS",
-		"MAX COMBO",
+		"BLUE STAR",
+		"WHITE STAR",
+		"YELLOW STAR",
+		"RED STAR",
 		"フルコンボ",
 		"オプション",
 	}, "\t")
