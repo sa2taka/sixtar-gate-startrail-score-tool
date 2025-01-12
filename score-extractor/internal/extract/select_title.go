@@ -1,7 +1,6 @@
 package extract
 
 import (
-	"fmt"
 	"image"
 	"score_extractor/internal/imageproc"
 	"score_extractor/internal/music_info"
@@ -28,8 +27,6 @@ func ExtractTitleFromSelect(img image.Image, musicInformationList []music_info.M
 	if err != nil {
 		return music_info.MusicInformation{}, err
 	}
-
-	fmt.Println(ocrText)
 
 	candidates := convertMusicInformationListToCandidates(musicInformationList)
 
