@@ -1,0 +1,10 @@
+# プロジェクト概要
+
+本プロジェクトはSixtarGate Startrailという音楽ゲームのスコアを管理することを目的としています。
+
+SixtarGate Startrailはスコアを出力するためのものがないため、リザルト画面のスクリーンショットからスコア等の情報を取得します。それが `score-extract` ディレクトリで実装しています。
+また、楽曲情報はWikiから取得します。 `music-information-scraping` ディレクトリで実装しています。
+
+## score-extract
+
+## music-information-scraping

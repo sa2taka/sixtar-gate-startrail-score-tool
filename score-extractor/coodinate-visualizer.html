@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>矩形選択ツール</title>
+    <style>
+        /* 全ての要素に対して box-sizing: border-box を適用 */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            position: relative;
+            display: inline-block;
+        }
+        #image {
+            max-width: 100%;
+            height: auto;
+            display: none;  /* 画像が選択されるまで非表示 */
+        }
+        .rectangle {
+            position: absolute;
+            border: 2px dashed red;
+            background-color: rgba(255, 0, 0, 0.3);
+        }
+        #coordinates {
+            margin-top: 10px;
+        }
+        .golang-vars {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+        #copyButton {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>矩形選択ツール</h1>
+<input type="file" id="fileInput" accept="image/*">
+<br><br>
+
+<div class="container">
+    <img id="image" alt="Select Area">
+    <div id="rect" class="rectangle" style="display: none;"></div>
+</div>
+
+<div id="coordinates">
+    <p>選択した座標: <span id="coords">x0: 0, y0: 0, x1: 0, y1: 0</span></p>
+    <p>選択した割合: <span id="coordsRatio">x0: 0%, y0: 0%, x1: 0%, y1: 0%</span></p>
+</div>
+
+<h3>Golang 変数 (割合)</h3>
+
+<div class="golang-vars">
+    <pre id="golangVars"></pre>
+</div>
+
+<button id="copyButton">Golang 変数（割合）をコピー</button>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const image = document.getElementById('image');
+    const rect = document.getElementById('rect');
+    const coordsDisplay = document.getElementById('coords');
+    const coordsRatioDisplay = document.getElementById('coordsRatio');
+    const golangVarsDisplay = document.getElementById('golangVars');
+    const copyButton = document.getElementById('copyButton');
+
+    let startX = 0;
+    let startY = 0;
+    let imgWidth = 0;
+    let imgHeight = 0;
+
+    // ファイル選択時に画像を表示
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                image.src = event.target.result;
+                image.style.display = 'block';  // 画像が読み込まれたら表示
+
+                // 画像が読み込まれた後、実際の画像サイズを取得
+                image.onload = () => {
+                    imgWidth = image.naturalWidth;  // 画像の実際の幅
+                    imgHeight = image.naturalHeight;  // 画像の実際の高さ
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    image.addEventListener('mousedown', (e) => {
+        const rectBounds = image.getBoundingClientRect();
+
+        // クリック位置を画像の表示サイズに基づいて計算
+        startX = e.clientX - rectBounds.left;
+        startY = e.clientY - rectBounds.top;
+
+        // 矩形の初期化
+        rect.style.left = `${startX}px`;
+        rect.style.top = `${startY}px`;
+        rect.style.width = '0px';
+        rect.style.height = '0px';
+        rect.style.display = 'block';
+
+        const onMouseMove = (e) => {
+            let currentX = e.clientX - rectBounds.left;
+            let currentY = e.clientY - rectBounds.top;
+
+            // 画像領域の範囲内に制限
+            currentX = Math.max(0, Math.min(currentX, rectBounds.width));
+            currentY = Math.max(0, Math.min(currentY, rectBounds.height));
+
+            // 矩形サイズの更新
+            rect.style.width = `${Math.abs(currentX - startX)}px`;
+            rect.style.height = `${Math.abs(currentY - startY)}px`;
+            rect.style.left = `${Math.min(currentX, startX)}px`;
+            rect.style.top = `${Math.min(currentY, startY)}px`;
+
+            // ピクセル座標を画像の実際のサイズに変換
+            const x0 = Math.min(currentX, startX) / rectBounds.width * imgWidth;
+            const y0 = Math.min(currentY, startY) / rectBounds.height * imgHeight;
+            const x1 = Math.max(currentX, startX) / rectBounds.width * imgWidth;
+            const y1 = Math.max(currentY, startY) / rectBounds.height * imgHeight;
+
+            // 割合座標の計算
+            const x0Rate = (x0 / imgWidth).toFixed(6)
+            const y0Rate = (y0 / imgHeight).toFixed(6)
+            const x1Rate = (x1 / imgWidth).toFixed(6)
+            const y1Rate = (y1 / imgHeight).toFixed(6)
+            const x0Ratio = ((x0 / imgWidth) * 100).toFixed(2);
+            const y0Ratio = ((y0 / imgHeight) * 100).toFixed(2);
+            const x1Ratio = ((x1 / imgWidth) * 100).toFixed(2);
+            const y1Ratio = ((y1 / imgHeight) * 100).toFixed(2);
+
+            // 座標の表示
+            coordsDisplay.textContent = `x0: ${Math.floor(x0)}, y0: ${Math.floor(y0)}, x1: ${Math.floor(x1)}, y1: ${Math.floor(y1)}`;
+            coordsRatioDisplay.textContent = `x0: ${x0Ratio}%, y0: ${y0Ratio}%, x1: ${x1Ratio}%, y1: ${y1Ratio}%`;
+
+            // Golangの割合変数定義を表示
+            golangVarsDisplay.textContent = `const prefixX0Rate = ${x0Rate} // ${Math.floor(x0)} / 1920 \nconst prefixY0Rate = ${y0Rate} // ${Math.floor(y0)} / 1080\nconst prefixX1Rate = ${x1Rate} // ${Math.floor(x1)} / 1920\nconst prefixY1Rate = ${y1Rate} // ${Math.floor(y1)} / 1080`;
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
+
+    // コピー機能
+    copyButton.addEventListener('click', () => {
+        const textarea = document.createElement('textarea');
+        textarea.value = golangVarsDisplay.textContent;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    });
+</script>
+
+</body>
+</html>
