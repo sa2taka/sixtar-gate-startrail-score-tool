@@ -55,6 +55,11 @@ func TestRun(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:    "不正な出力フォーマットを指定",
+			args:    []string{"-output", "invalid", tmpDir},
+			wantErr: true,
+		},
+		{
 			name: "正常系（全ファイル）",
 			args: []string{"-output", "json", tmpDir},
 		},
@@ -70,6 +75,10 @@ func TestRun(t *testing.T) {
 				tmpDir,
 			},
 		},
+		{
+			name: "正常系（詳細出力）",
+			args: []string{"-verbose", "-output", "json", tmpDir},
+		},
 	}
 
 	for _, tt := range tests {
@@ -82,74 +91,6 @@ func TestRun(t *testing.T) {
 			err := Run()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestFindImageFiles(t *testing.T) {
-	// テスト用の一時ディレクトリを作成
-	tmpDir, err := os.MkdirTemp("", "extract-test-*")
-	if err != nil {
-		t.Fatalf("一時ディレクトリの作成に失敗: %v", err)
-	}
-	defer os.RemoveAll(tmpDir)
-
-	// テスト用のファイルを作成
-	now := time.Now()
-	old := now.Add(-24 * time.Hour)
-
-	files := []struct {
-		name    string
-		modTime time.Time
-	}{
-		{"test1.jpg", old},
-		{"test2.png", now},
-		{"test3.jpeg", now},
-		{"test4.txt", now}, // 非画像ファイル
-	}
-
-	for _, f := range files {
-		path := filepath.Join(tmpDir, f.name)
-		if err := os.WriteFile(path, []byte("dummy"), 0644); err != nil {
-			t.Fatalf("テストファイルの作成に失敗: %v", err)
-		}
-		if err := os.Chtimes(path, f.modTime, f.modTime); err != nil {
-			t.Fatalf("ファイルの更新日時の設定に失敗: %v", err)
-		}
-	}
-
-	tests := []struct {
-		name      string
-		opts      *Options
-		wantCount int
-	}{
-		{
-			name: "全ての画像ファイルを取得",
-			opts: &Options{
-				Directory: tmpDir,
-			},
-			wantCount: 3,
-		},
-		{
-			name: "新しい画像ファイルのみを取得",
-			opts: &Options{
-				Directory: tmpDir,
-				Since:     old.Add(time.Hour),
-			},
-			wantCount: 2,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := findImageFiles(tt.opts)
-			if err != nil {
-				t.Errorf("findImageFiles() error = %v", err)
-				return
-			}
-			if len(got) != tt.wantCount {
-				t.Errorf("findImageFiles() got %d files, want %d", len(got), tt.wantCount)
 			}
 		})
 	}

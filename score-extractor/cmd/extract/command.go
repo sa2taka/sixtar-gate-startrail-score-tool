@@ -1,54 +1,101 @@
 package extract
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
+	"score_extractor/internal/fileutil"
 )
+
+// Command は抽出コマンドを表す構造体
+type Command struct {
+	options   *Options
+	formatter Formatter
+}
+
+// NewCommand は新しいCommandを作成する
+func NewCommand(opts *Options) (*Command, error) {
+	formatter, err := NewFormatter(opts.OutputFormat, os.Stdout)
+	if err != nil {
+		return nil, newError("フォーマッターの作成に失敗", err)
+	}
+
+	return &Command{
+		options:   opts,
+		formatter: formatter,
+	}, nil
+}
 
 // Run はextractコマンドのメイン処理を実行する
 func Run() error {
 	opts, err := ParseOptions(os.Args[1:])
 	if err != nil {
-		return fmt.Errorf("オプションのパースに失敗: %w", err)
+		return newError("オプションのパースに失敗", err)
 	}
 
-	// ディレクトリの存在確認
-	if _, err := os.Stat(opts.Directory); os.IsNotExist(err) {
-		return fmt.Errorf("指定されたディレクトリが存在しません: %s", opts.Directory)
-	}
-
-	if opts.Verbose {
-		fmt.Printf("処理対象ディレクトリ: %s\n", opts.Directory)
-		if !opts.Since.IsZero() {
-			fmt.Printf("処理対象時刻: %s 以降\n", opts.Since.Format("2006-01-02 15:04:05"))
-		}
-		fmt.Printf("出力フォーマット: %s\n", opts.OutputFormat)
-	}
-
-	// 画像ファイルの検索
-	images, err := findImageFiles(opts)
+	cmd, err := NewCommand(opts)
 	if err != nil {
-		return fmt.Errorf("画像ファイルの検索に失敗: %w", err)
+		return err
+	}
+
+	return cmd.Execute()
+}
+
+// Execute はコマンドの実行を行う
+func (c *Command) Execute() error {
+	if err := c.validateOptions(); err != nil {
+		return err
+	}
+
+	images, err := c.findTargetImages()
+	if err != nil {
+		return err
 	}
 
 	if len(images) == 0 {
-		return fmt.Errorf("処理対象の画像ファイルが見つかりませんでした")
+		return newError("処理対象の画像ファイルが見つかりませんでした", nil)
 	}
 
-	if opts.Verbose {
+	if c.options.Verbose {
 		fmt.Printf("処理対象ファイル数: %d\n", len(images))
 	}
 
-	// 結果の格納用スライス
+	results, errors := c.processImages(images)
+	if err := c.outputResults(results); err != nil {
+		return err
+	}
+
+	return c.handleErrors(errors)
+}
+
+// validateOptions はオプションの検証を行う
+func (c *Command) validateOptions() error {
+	if c.options.Verbose {
+		fmt.Printf("処理対象ディレクトリ: %s\n", c.options.Directory)
+		if !c.options.Since.IsZero() {
+			fmt.Printf("処理対象時刻: %s 以降\n", c.options.Since.Format("2006-01-02 15:04:05"))
+		}
+		fmt.Printf("出力フォーマット: %s\n", c.options.OutputFormat)
+	}
+	return nil
+}
+
+// findTargetImages は処理対象の画像ファイルを検索する
+func (c *Command) findTargetImages() ([]string, error) {
+	finder := fileutil.NewImageFinder(c.options.Directory, c.options.Since)
+	images, err := finder.Find()
+	if err != nil {
+		return nil, newError("画像ファイルの検索に失敗", err)
+	}
+	return images, nil
+}
+
+// processImages は画像ファイルの処理を行う
+func (c *Command) processImages(images []string) ([]*Result, []string) {
 	var results []*Result
 	var errors []string
 
-	// 各画像ファイルからスコアを抽出
 	for _, imgPath := range images {
-		if opts.Verbose {
+		if c.options.Verbose {
 			fmt.Printf("処理中: %s\n", imgPath)
 		}
 
@@ -56,7 +103,7 @@ func Run() error {
 		info, err := os.Stat(imgPath)
 		if err != nil {
 			msg := fmt.Sprintf("%s: ファイル情報の取得に失敗: %v", imgPath, err)
-			if opts.Verbose {
+			if c.options.Verbose {
 				fmt.Fprintln(os.Stderr, msg)
 			}
 			errors = append(errors, msg)
@@ -67,7 +114,7 @@ func Run() error {
 		result, err := ExtractResult(imgPath, info.ModTime())
 		if err != nil {
 			msg := fmt.Sprintf("%s: %v", imgPath, err)
-			if opts.Verbose {
+			if c.options.Verbose {
 				fmt.Fprintln(os.Stderr, msg)
 			}
 			errors = append(errors, msg)
@@ -77,83 +124,24 @@ func Run() error {
 		results = append(results, result)
 	}
 
-	// 結果の出力
-	switch opts.OutputFormat {
-	case "json":
-		if err := outputJSON(results); err != nil {
-			return fmt.Errorf("JSON出力に失敗: %w", err)
-		}
-	case "tsv":
-		if err := outputTSV(results); err != nil {
-			return fmt.Errorf("TSV出力に失敗: %w", err)
-		}
-	}
+	return results, errors
+}
 
-	if opts.Verbose {
-		fmt.Printf("\n処理完了: %d件成功, %d件失敗\n", len(results), len(errors))
+// outputResults は結果の出力を行う
+func (c *Command) outputResults(results []*Result) error {
+	return c.formatter.Format(results)
+}
+
+// handleErrors はエラーの処理を行う
+func (c *Command) handleErrors(errors []string) error {
+	if c.options.Verbose {
+		fmt.Printf("\n処理完了: %d件成功, %d件失敗\n", len(errors), len(errors))
 		if len(errors) > 0 {
 			fmt.Fprintln(os.Stderr, "\n失敗したファイル:")
 			for _, err := range errors {
 				fmt.Fprintln(os.Stderr, err)
 			}
 		}
-	}
-
-	return nil
-}
-
-// findImageFiles は指定されたディレクトリから画像ファイルを検索する
-func findImageFiles(opts *Options) ([]string, error) {
-	var images []string
-
-	err := filepath.Walk(opts.Directory, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// ディレクトリはスキップ
-		if info.IsDir() {
-			return nil
-		}
-
-		// 時刻によるフィルタリング
-		if !opts.Since.IsZero() && info.ModTime().Before(opts.Since) {
-			return nil
-		}
-
-		// 拡張子によるフィルタリング
-		ext := strings.ToLower(filepath.Ext(path))
-		switch ext {
-		case ".jpg", ".jpeg", ".png":
-			images = append(images, path)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return images, nil
-}
-
-// outputJSON は結果をJSON形式で出力する
-func outputJSON(results []*Result) error {
-	// 結果全体を配列としてJSONに変換
-	encoder := json.NewEncoder(os.Stdout)
-	encoder.SetIndent("", "  ")
-	return encoder.Encode(results)
-}
-
-// outputTSV は結果をTSV形式で出力する
-func outputTSV(results []*Result) error {
-	// ヘッダーを出力
-	fmt.Println(HeaderTSV())
-
-	// 各結果を出力
-	for _, result := range results {
-		fmt.Println(result.FormatTSV())
 	}
 	return nil
 }
