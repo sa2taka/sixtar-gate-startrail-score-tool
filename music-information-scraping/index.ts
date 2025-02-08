@@ -291,7 +291,9 @@ const result = await processLinksInParallel(links);
 
 await writeFile(
 	"musicInformation.json",
-	JSON.stringify({ songs: [...(musicInformation?.songs ?? []), ...result] })
+	`{\n  "songs": [\n${[...(musicInformation?.songs ?? []), ...result]
+		.map((song) => `    ${JSON.stringify(song)}`)
+		.join(",\n")}\n  ]\n}`
 );
 
 await browser.close();
