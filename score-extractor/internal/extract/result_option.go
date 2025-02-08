@@ -87,6 +87,8 @@ func extractHazardFromResult(img image.Image) (Hazard, error) {
 		return Lv1, nil
 	} else if strings.Contains(lowerText, "default") {
 		return DefaultHazard, nil
+	} else if strings.Contains(lowerText, "sudden") {
+		return Sudden, nil
 	} else {
 		return UnknownHazard, nil
 	}

@@ -18,4 +18,5 @@ const (
 	Lv2           Hazard = "LV2"
 	Lv3           Hazard = "LV3"
 	Deadend       Hazard = "DEADEND"
+	Sudden        Hazard = "SUDDEN"
 )
