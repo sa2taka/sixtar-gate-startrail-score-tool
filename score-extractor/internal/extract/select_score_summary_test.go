@@ -30,6 +30,7 @@ func TestExtractScoreSummaryFromSelect(t *testing.T) {
 			name:     "通常の選択画面",
 			filename: "select_qs.jpg",
 			want: &ScoreSummary{
+				Kind:        MusicSelect,
 				Title:       findMusicById(candidates, "STARGATE_EXTREME"),
 				Mode:        Solar,
 				Difficult:   Quasar,
@@ -43,6 +44,7 @@ func TestExtractScoreSummaryFromSelect(t *testing.T) {
 			name:     "フルコンボの選択画面",
 			filename: "select_fc.jpg",
 			want: &ScoreSummary{
+				Kind:        MusicSelect,
 				Title:       findMusicById(candidates, "Full_power_Happy_life"),
 				Mode:        Solar,
 				Difficult:   Quasar,

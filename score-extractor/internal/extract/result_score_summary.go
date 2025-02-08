@@ -47,6 +47,7 @@ func extractScoreFromResult(img image.Image, musicInformationList []music_info.M
 	isFullCombo := judgement.RedStar == 0
 
 	return &ScoreSummary{
+		Kind:        Result,
 		Title:       title,
 		Mode:        mode,
 		Difficult:   difficult,

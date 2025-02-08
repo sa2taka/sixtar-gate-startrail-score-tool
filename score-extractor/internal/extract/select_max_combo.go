@@ -29,7 +29,32 @@ func ExtractMaxComboFromSelect(img image.Image) (int, error) {
 		return 0, err
 	}
 
-	// OCRで取得したテキストから数字のみを抽出
-	cleanText := strings.TrimSpace(ocrText)
+	// OCRで取得したテキストから末尾の数字のみを抽出
+	cleanText := extractLastNumber(strings.TrimSpace(ocrText))
 	return util.StringToInt(cleanText)
+}
+
+// extractLastNumber は文字列から末尾の数字部分のみを抽出します
+func extractLastNumber(s string) string {
+	var result strings.Builder
+	foundNumber := false
+
+	// 文字列を後ろから走査して、最初に見つかった連続する数字を抽出
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] >= '0' && s[i] <= '9' {
+			result.WriteByte(s[i])
+			foundNumber = true
+		} else if foundNumber {
+			// 数字列が途切れたら終了
+			break
+		}
+	}
+
+	// 後ろから読み取った文字列を反転
+	runes := []rune(result.String())
+	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+
+	return string(runes)
 }

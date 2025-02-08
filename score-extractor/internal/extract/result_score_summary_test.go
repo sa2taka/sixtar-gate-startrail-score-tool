@@ -30,6 +30,7 @@ func TestExtractScoreSummaryFromResult(t *testing.T) {
 			name:     "通常のリザルト",
 			filename: "result_qs.jpg",
 			want: &ScoreSummary{
+				Kind:      Result,
 				Title:     findMusicById(candidates, "128kbps_Succubus"),
 				Mode:      Solar,
 				Difficult: Quasar,
@@ -50,6 +51,7 @@ func TestExtractScoreSummaryFromResult(t *testing.T) {
 			name:     "フルコンボのリザルト",
 			filename: "result_pb.jpg",
 			want: &ScoreSummary{
+				Kind:      Result,
 				Title:     findMusicById(candidates, "Mischievous_Sensation"),
 				Mode:      Solar,
 				Difficult: Quasar,

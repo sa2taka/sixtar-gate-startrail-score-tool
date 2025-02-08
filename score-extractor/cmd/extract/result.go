@@ -61,12 +61,6 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 		return nil, fmt.Errorf("楽曲情報の読み込みに失敗（%s）: %w", musicInfoPath, err)
 	}
 
-	// 画面種別を判定
-	kind, err := extract.JudgeKind(img)
-	if err != nil {
-		return nil, fmt.Errorf("画面種別の判定に失敗: %w", err)
-	}
-
 	// 画像から情報を抽出
 	summary, err := extract.ExtractScore(img, musicInfoList)
 	if err != nil {
@@ -114,7 +108,7 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 	result := &Result{
 		FilePath:    filePath,
 		ModTime:     modTime,
-		Kind:        string(kind),
+		Kind:        string(summary.Kind),
 		Title:       summary.Title.Name,
 		Score:       summary.Score,
 		IsFullCombo: summary.IsFullCombo,

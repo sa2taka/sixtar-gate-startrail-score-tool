@@ -14,6 +14,11 @@ func TestIsResult(t *testing.T) {
 	}{
 		{
 			name:     "リザルト画面",
+			filename: "result_lunar.jpg",
+			want:     Result,
+		},
+		{
+			name:     "リザルト画面",
 			filename: "result_qs.jpg",
 			want:     Result,
 		},

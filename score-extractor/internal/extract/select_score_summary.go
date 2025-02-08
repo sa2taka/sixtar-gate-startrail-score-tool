@@ -28,7 +28,7 @@ func extractScoreFromSelect(img image.Image, musicInformationList []music_info.M
 	// スコアの取得
 	score, err := ExtractScoreFromSelect(img)
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract score: %w", err)
+		score = -1
 	}
 
 	// フルコンボかどうかの取得
@@ -44,6 +44,7 @@ func extractScoreFromSelect(img image.Image, musicInformationList []music_info.M
 	}
 
 	return &ScoreSummary{
+		Kind:        MusicSelect,
 		Title:       title,
 		Mode:        mode,
 		Difficult:   difficult,

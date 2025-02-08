@@ -8,6 +8,7 @@ import (
 
 // ScoreSummary は画像から抽出したスコア情報を保持する構造体です。
 type ScoreSummary struct {
+	Kind      Kind
 	Title     music_info.MusicInformation
 	Mode      Mode
 	Difficult Difficult
@@ -38,6 +39,6 @@ func ExtractScore(img image.Image, musicInformationList []music_info.MusicInform
 	case MusicSelect:
 		return extractScoreFromSelect(img, musicInformationList)
 	default:
-		return nil, fmt.Errorf("unsupported kind: %v", kind)
+		return extractScoreFromResult(img, musicInformationList)
 	}
 }
