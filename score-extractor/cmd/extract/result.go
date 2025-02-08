@@ -7,7 +7,6 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -40,7 +39,7 @@ type Result struct {
 }
 
 // ExtractResult は画像ファイルから情報を抽出する
-func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
+func ExtractResult(filePath string, modTime time.Time, musicInfoPath string) (*Result, error) {
 	// 画像ファイルを開く
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -55,7 +54,6 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 	}
 
 	// 楽曲情報を読み込む
-	musicInfoPath := filepath.Join(filepath.Dir(filePath), "..", "musicInformation.json")
 	musicInfoList, err := music_info.LoadMusicData(musicInfoPath)
 	if err != nil {
 		return nil, fmt.Errorf("楽曲情報の読み込みに失敗（%s）: %w", musicInfoPath, err)

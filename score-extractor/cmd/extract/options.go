@@ -16,6 +16,8 @@ type Options struct {
 	OutputFormat string
 	// 詳細なログ出力
 	Verbose bool
+	// 楽曲情報JSONファイルのパス
+	MusicInfoPath string
 }
 
 // ParseOptions はコマンドライン引数をパースしてOptionsを返す
@@ -27,6 +29,7 @@ func ParseOptions(args []string) (*Options, error) {
 	fs.StringVar(&sinceStr, "since", "", "指定時刻以降のファイルのみを処理 (形式: 2006-01-02T15:04:05)")
 	fs.StringVar(&opts.OutputFormat, "format", "json", "出力フォーマット (json/tsv)")
 	fs.BoolVar(&opts.Verbose, "verbose", false, "詳細なログ出力")
+	fs.StringVar(&opts.MusicInfoPath, "music-info", "", "楽曲情報JSONファイルのパス")
 
 	if err := fs.Parse(args); err != nil {
 		return nil, err

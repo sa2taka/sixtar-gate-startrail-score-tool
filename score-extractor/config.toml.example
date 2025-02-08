@@ -5,3 +5,7 @@ port = 6433  # デフォルトポート
 # スクリーンショット監視の設定
 [monitoring]
 directory = "./screenshots"  # スクリーンショットが保存されているディレクトリ
+
+# 楽曲情報の設定
+[music_info]
+path = "musicInformation.json"  # 楽曲情報JSONファイルのパス

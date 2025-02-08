@@ -7,16 +7,27 @@ import (
 	"time"
 
 	"score_extractor/cmd/extract"
+	"score_extractor/internal/config"
 	"score_extractor/internal/fileutil"
 )
 
 type ScoresHandler struct {
 	directory string
+	config    *config.Config
 }
 
 func NewScoresHandler(directory string) *ScoresHandler {
+	// 設定ファイルを読み込む
+	cfg, err := config.LoadConfig("config.toml")
+	if err != nil {
+		// 設定ファイルが読めない場合はデフォルト値を使用
+		cfg = &config.Config{}
+		cfg.MusicInfo.Path = "musicInformation.json"
+	}
+
 	return &ScoresHandler{
 		directory: directory,
+		config:    cfg,
 	}
 }
 
@@ -52,7 +63,7 @@ func (h *ScoresHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		result, err := extract.ExtractResult(file, fileInfo.ModTime())
+		result, err := extract.ExtractResult(file, fileInfo.ModTime(), h.config.MusicInfo.Path)
 		if err != nil {
 			continue // Skip failed extractions
 		}

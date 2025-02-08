@@ -3,6 +3,7 @@ package extract
 import (
 	"fmt"
 	"os"
+	"score_extractor/internal/config"
 	"score_extractor/internal/fileutil"
 )
 
@@ -10,6 +11,7 @@ import (
 type Command struct {
 	options   *Options
 	formatter Formatter
+	config    *config.Config
 }
 
 // NewCommand は新しいCommandを作成する
@@ -19,9 +21,18 @@ func NewCommand(opts *Options) (*Command, error) {
 		return nil, newError("フォーマッターの作成に失敗", err)
 	}
 
+	// 設定ファイルを読み込む
+	cfg, err := config.LoadConfig("config.toml")
+	if err != nil {
+		// 設定ファイルが読めない場合はデフォルト値を使用
+		cfg = &config.Config{}
+		cfg.MusicInfo.Path = "musicInformation.json"
+	}
+
 	return &Command{
 		options:   opts,
 		formatter: formatter,
+		config:    cfg,
 	}, nil
 }
 
@@ -80,6 +91,11 @@ func (c *Command) validateOptions() error {
 			fmt.Printf("処理対象時刻: %s 以降\n", c.options.Since.Format("2006-01-02 15:04:05"))
 		}
 		fmt.Printf("出力フォーマット: %s\n", c.options.OutputFormat)
+		if c.options.MusicInfoPath != "" {
+			fmt.Printf("楽曲情報ファイル: %s\n", c.options.MusicInfoPath)
+		} else {
+			fmt.Printf("楽曲情報ファイル: %s\n", c.config.MusicInfo.Path)
+		}
 	}
 	return nil
 }
@@ -99,6 +115,12 @@ func (c *Command) processImages(images []string) ([]*Result, []string) {
 	var results []*Result
 	var errors []string
 
+	// 楽曲情報ファイルのパスを決定
+	musicInfoPath := c.config.MusicInfo.Path
+	if c.options.MusicInfoPath != "" {
+		musicInfoPath = c.options.MusicInfoPath
+	}
+
 	for _, imgPath := range images {
 		if c.options.Verbose {
 			fmt.Printf("処理中: %s\n", imgPath)
@@ -116,7 +138,7 @@ func (c *Command) processImages(images []string) ([]*Result, []string) {
 		}
 
 		// スコアを抽出
-		result, err := ExtractResult(imgPath, info.ModTime())
+		result, err := ExtractResult(imgPath, info.ModTime(), musicInfoPath)
 		if err != nil {
 			msg := fmt.Sprintf("%s: %v", imgPath, err)
 			if c.options.Verbose {
@@ -140,7 +162,6 @@ func (c *Command) outputResults(results []*Result) error {
 // handleErrors はエラーの処理を行う
 func (c *Command) handleErrors(errors []string) error {
 	if c.options.Verbose {
-		fmt.Printf("\n処理完了: %d件成功, %d件失敗\n", len(errors), len(errors))
 		if len(errors) > 0 {
 			fmt.Fprintln(os.Stderr, "\n失敗したファイル:")
 			for _, err := range errors {
