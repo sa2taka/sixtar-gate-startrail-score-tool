@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/client"
 }
 
 datasource db {
@@ -39,18 +38,16 @@ model Session {
 }
 
 model User {
-  id            String        @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String?       @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  scores        Score[]
-  settings      UserSettings?
-  filters       SavedFilter[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Result        Result[]
 }
 
 enum MusicType {
@@ -58,7 +55,7 @@ enum MusicType {
   lunar
 }
 
-enum Level {
+enum Difficulty {
   comet
   nova
   supernova
@@ -70,7 +67,7 @@ enum Level {
 enum Hazard {
   DEFAULT
   LV1
-  LV
+  LV2
   LV3
   DEADEND
   SUDDEN
@@ -83,70 +80,49 @@ enum Pattern {
 }
 
 model Music {
-  id           String            @id
-  name         String
-  englishName  String?
-  bpm          Int?
-  musicLength  Int
-  link         String
-  difficulties MusicDifficulty[]
-  scores       Score[]
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id          String   @id
+  name        String
+  englishName String?
+  bpm         Int?
+  musicLength Int
+  link        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Chart       Chart[]
 }
 
-model MusicDifficulty {
-  id      String    @id @default(cuid())
-  musicId String
-  type    MusicType
-  level   Level
-  notes   Int
-  combo   Int
-  music   Music     @relation(fields: [musicId], references: [id], onDelete: Cascade)
-  scores  Score[]
+model Chart {
+  musicId    String
+  type       MusicType
+  difficulty Difficulty
+  level      Int
+  notes      Int
+  combo      Int
+  music      Music      @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  userId     String?
+  Result     Result[]
 
-  @@unique([musicId, type, level])
+  @@id([musicId, type, difficulty])
 }
 
-model Score {
-  id           String          @id @default(uuid())
-  userId       String
-  musicId      String
-  difficultyId String
-  mode         String
-  score        Int
-  blueStar     Int
-  whiteStar    Int
-  yellowStar   Int
-  redStar      Int
-  isFullCombo  Boolean
-  hazard       Hazard
-  pattern      Pattern
-  playedAt     DateTime
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  music        Music           @relation(fields: [musicId], references: [id])
-  difficulty   MusicDifficulty @relation(fields: [difficultyId], references: [id])
-}
-
-model UserSettings {
-  id                  String   @id @default(cuid())
-  userId              String   @unique
-  scoreExtractorUrl   String?
-  pollingInterval     Int      @default(5000)
-  notificationEnabled Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model SavedFilter {
-  id           String   @id @default(cuid())
-  userId       String
-  name         String
-  filterConfig Json
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Result {
+  id          String     @id @default(uuid())
+  userId      String
+  musicId     String
+  type        MusicType
+  difficulty  Difficulty
+  mode        String
+  score       Int
+  blueStar    Int
+  whiteStar   Int
+  yellowStar  Int
+  redStar     Int
+  isFullCombo Boolean
+  hazard      Hazard
+  pattern     Pattern
+  playedAt    DateTime
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chart       Chart      @relation(fields: [musicId, type, difficulty], references: [musicId, type, difficulty])
 }
