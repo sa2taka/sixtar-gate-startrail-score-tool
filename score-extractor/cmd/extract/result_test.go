@@ -2,6 +2,7 @@ package extract
 
 import (
 	"encoding/json"
+	"score_extractor/internal/music_info"
 	"strings"
 	"testing"
 	"time"
@@ -10,9 +11,13 @@ import (
 func TestResult_FormatJSON(t *testing.T) {
 	now := time.Now()
 	result := &Result{
-		FilePath:   "test.jpg",
-		ModTime:    now,
-		Title:      "Test Song",
+		FilePath: "test.jpg",
+		ModTime:  now,
+		Music: music_info.MusicInformation{
+			Id:          "test_song",
+			Name:        "Test Song",
+			EnglishName: "Test Song",
+		},
 		Difficulty: "comet",
 		Mode:       "solar",
 		Score:      1000000,
@@ -47,7 +52,7 @@ func TestResult_FormatJSON(t *testing.T) {
 		"file_path",
 		"mod_time",
 		"kind",
-		"title",
+		"music",
 		"difficulty",
 		"mode",
 		"score",
@@ -66,10 +71,14 @@ func TestResult_FormatJSON(t *testing.T) {
 func TestResult_FormatTSV(t *testing.T) {
 	now := time.Now()
 	result := &Result{
-		FilePath:   "test.jpg",
-		ModTime:    now,
-		Kind:       "Result",
-		Title:      "Test Song",
+		FilePath: "test.jpg",
+		ModTime:  now,
+		Kind:     "Result",
+		Music: music_info.MusicInformation{
+			Id:          "test_song",
+			Name:        "Test Song",
+			EnglishName: "Test Song",
+		},
 		Difficulty: "comet",
 		Mode:       "solar",
 		Score:      1000000,

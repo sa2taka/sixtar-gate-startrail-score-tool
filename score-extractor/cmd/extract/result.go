@@ -23,8 +23,8 @@ type Result struct {
 	ModTime time.Time `json:"mod_time"`
 	// 画面種別
 	Kind string `json:"kind"`
-	// 楽曲タイトル
-	Title string `json:"title"`
+	// 楽曲情報
+	Music music_info.MusicInformation `json:"music"`
 	// 難易度
 	Difficulty string `json:"difficulty,omitempty"`
 	// モード
@@ -109,7 +109,7 @@ func ExtractResult(filePath string, modTime time.Time) (*Result, error) {
 		FilePath:    filePath,
 		ModTime:     modTime,
 		Kind:        string(summary.Kind),
-		Title:       summary.Title.Name,
+		Music:       summary.Title,
 		Score:       summary.Score,
 		IsFullCombo: summary.IsFullCombo,
 	}
@@ -164,7 +164,7 @@ func (r *Result) FormatTSV() string {
 		r.FilePath,
 		r.ModTime.Format(time.RFC3339),
 		r.Kind,
-		r.Title,
+		r.Music.Name,
 		r.Difficulty,
 		r.Score,
 		judgments,
