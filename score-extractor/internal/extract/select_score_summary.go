@@ -1,55 +1,49 @@
 package extract
 
 import (
-	"fmt"
 	"image"
 	"score_extractor/internal/music_info"
 )
 
 func extractScoreFromSelect(img image.Image, musicInformationList []music_info.MusicInformation) (*ScoreSummary, error) {
+	summary := &ScoreSummary{
+		Kind:        MusicSelect,
+		Mode:        UnknownMode,
+		Difficult:   NoDifficult,
+		Score:       -1,
+		IsFullCombo: false,
+		MaxCombo:    -1,
+	}
+
 	// 楽曲情報の取得
-	title, err := ExtractTitleFromSelect(img, musicInformationList)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract title: %w", err)
+	if title, err := ExtractTitleFromSelect(img, musicInformationList); err == nil {
+		summary.Title = title
 	}
 
 	// モードの取得
-	mode, err := ExtractModeFromSelect(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract mode: %w", err)
+	if mode, err := ExtractModeFromSelect(img); err == nil {
+		summary.Mode = mode
 	}
 
 	// 難易度の取得
-	difficult, err := ExtractDifficultFromSelect(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract difficult: %w", err)
+	if difficult, err := ExtractDifficultFromSelect(img); err == nil {
+		summary.Difficult = difficult
 	}
 
 	// スコアの取得
-	score, err := ExtractScoreFromSelect(img)
-	if err != nil {
-		score = -1
+	if score, err := ExtractScoreFromSelect(img); err == nil {
+		summary.Score = score
 	}
 
 	// フルコンボかどうかの取得
-	isFullCombo, err := ExtractIsFullComboFromSelect(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract full combo: %w", err)
+	if isFullCombo, err := ExtractIsFullComboFromSelect(img); err == nil {
+		summary.IsFullCombo = isFullCombo
 	}
 
 	// 最大コンボ数の取得
-	maxCombo, err := ExtractMaxComboFromSelect(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract max combo: %w", err)
+	if maxCombo, err := ExtractMaxComboFromSelect(img); err == nil {
+		summary.MaxCombo = maxCombo
 	}
 
-	return &ScoreSummary{
-		Kind:        MusicSelect,
-		Title:       title,
-		Mode:        mode,
-		Difficult:   difficult,
-		Score:       score,
-		IsFullCombo: isFullCombo,
-		MaxCombo:    maxCombo,
-	}, nil
+	return summary, nil
 }

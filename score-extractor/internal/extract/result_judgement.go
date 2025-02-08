@@ -1,7 +1,6 @@
 package extract
 
 import (
-	"fmt"
 	"image"
 	"score_extractor/internal/imageproc"
 	"score_extractor/internal/ocr"
@@ -40,7 +39,6 @@ func judgmentExtractor(img image.Image, x0Rate, y0Rate, x1Rate, y1Rate float64, 
 	defer wg.Done()
 
 	cropRect := util.CalculateCrop(img, x0Rate, y0Rate, x1Rate, y1Rate)
-
 	croppedImg := imageproc.CropImage(img, cropRect)
 
 	imgBytes, err := imageproc.ImageToBytes(croppedImg)
@@ -68,8 +66,8 @@ func ExtractJudgementFromResult(img image.Image) (Judgement, error) {
 	var wg sync.WaitGroup
 	wg.Add(4)
 
-	// 各ジャッジの結果を保存する変数
-	var blueStar, whiteStar, yellowStar, redStar int
+	// 各ジャッジの結果を保存する変数（デフォルト値は-1）
+	var blueStar, whiteStar, yellowStar, redStar = -1, -1, -1, -1
 
 	// 並列に処理を実行
 	go judgmentExtractor(img, blueStarAreaX0Rate, blueStarAreaY0Rate, blueStarAreaX1Rate, blueStarAreaY1Rate, &wg, &blueStar)
@@ -80,11 +78,7 @@ func ExtractJudgementFromResult(img image.Image) (Judgement, error) {
 	// 全てのゴルーチンの完了を待つ
 	wg.Wait()
 
-	// いずれかが-1であればnilを返す
-	if blueStar == -1 || whiteStar == -1 || yellowStar == -1 || redStar == -1 {
-		return Judgement{}, fmt.Errorf("failed to extract judgement from result")
-	}
-
+	// 全ての値を返す（取得できなかった場合は-1のまま）
 	return Judgement{
 		BlueStar:   blueStar,
 		WhiteStar:  whiteStar,

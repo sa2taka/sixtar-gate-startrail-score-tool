@@ -1,60 +1,53 @@
 package extract
 
 import (
-	"fmt"
 	"image"
 	"score_extractor/internal/music_info"
 )
 
 func extractScoreFromResult(img image.Image, musicInformationList []music_info.MusicInformation) (*ScoreSummary, error) {
+	summary := &ScoreSummary{
+		Kind:        Result,
+		Mode:        UnknownMode,
+		Difficult:   NoDifficult,
+		Score:       -1,
+		Pattern:     UnknownPattern,
+		Hazard:      UnknownHazard,
+		IsFullCombo: false,
+	}
+
 	// 楽曲情報の取得
-	title, err := ExtractTitleFromResult(img, musicInformationList)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract title: %w", err)
+	if title, err := ExtractTitleFromResult(img, musicInformationList); err == nil {
+		summary.Title = title
 	}
 
 	// モードの取得
-	mode, err := ExtractMode(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract mode: %w", err)
+	if mode, err := ExtractMode(img); err == nil {
+		summary.Mode = mode
 	}
 
 	// 難易度の取得
-	difficult, err := ExtractDifficultFromResult(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract difficult: %w", err)
+	if difficult, err := ExtractDifficultFromResult(img); err == nil {
+		summary.Difficult = difficult
 	}
 
 	// スコアの取得
-	score, err := ExtractScoreFromResult(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract score: %w", err)
+	if score, err := ExtractScoreFromResult(img); err == nil {
+		summary.Score = score
 	}
 
 	// オプションの取得
-	pattern, hazard, err := ExtractOptionFromResult(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract option: %w", err)
+	if pattern, hazard, err := ExtractOptionFromResult(img); err == nil {
+		summary.Pattern = pattern
+		summary.Hazard = hazard
 	}
 
 	// ジャッジ情報の取得
-	judgement, err := ExtractJudgementFromResult(img)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract judgement: %w", err)
+	if judgement, err := ExtractJudgementFromResult(img); err == nil {
+		summary.Judgement = &judgement
+		// フルコンボ判定（redStar が 0 の場合）
+		summary.IsFullCombo = judgement.RedStar == 0
 	}
 
-	// フルコンボ判定（redStar が 0 の場合）
-	isFullCombo := judgement.RedStar == 0
-
-	return &ScoreSummary{
-		Kind:        Result,
-		Title:       title,
-		Mode:        mode,
-		Difficult:   difficult,
-		Score:       score,
-		Pattern:     pattern,
-		Hazard:      hazard,
-		Judgement:   &judgement,
-		IsFullCombo: isFullCombo,
-	}, nil
+	return summary, nil
 }
