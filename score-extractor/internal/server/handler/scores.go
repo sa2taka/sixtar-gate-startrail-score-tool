@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -67,6 +69,21 @@ func (h *ScoresHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			continue // Skip failed extractions
 		}
+
+		// 画像ファイルを読み込んでBase64エンコード
+		imgFile, err := os.Open(file)
+		if err != nil {
+			continue
+		}
+		defer imgFile.Close()
+
+		imgData, err := io.ReadAll(imgFile)
+		if err != nil {
+			continue
+		}
+
+		// Base64エンコード
+		result.ImageBinary = base64.StdEncoding.EncodeToString(imgData)
 		results = append(results, result)
 	}
 

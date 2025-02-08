@@ -94,6 +94,7 @@ curl http://localhost:6433/api/v1/scores?since=2024-01-01T00:00:00Z
 ```json
 {
   "file_path": "image.jpg",
+  "image_binary": "画像のバイナリのBase64エンコードしたもの",
   "mod_time": "2024-01-01T12:00:00+09:00",
   "kind": "result",
   "title": "曲名",

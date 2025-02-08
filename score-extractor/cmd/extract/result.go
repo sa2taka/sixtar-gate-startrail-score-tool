@@ -36,6 +36,8 @@ type Result struct {
 	IsFullCombo bool `json:"is_full_combo"`
 	// オプション
 	Options []string `json:"options,omitempty"`
+	// Base64エンコードされた画像データ（serverモードでのみ使用）
+	ImageBinary string `json:"image_binary,omitempty"`
 }
 
 // ExtractResult は画像ファイルから情報を抽出する
