@@ -19,6 +19,12 @@ func extractScoreFromSelect(img image.Image, musicInformationList []music_info.M
 		return nil, fmt.Errorf("failed to extract mode: %w", err)
 	}
 
+	// 難易度の取得
+	difficult, err := ExtractDifficultFromSelect(img)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract difficult: %w", err)
+	}
+
 	// スコアの取得
 	score, err := ExtractScoreFromSelect(img)
 	if err != nil {
@@ -40,7 +46,7 @@ func extractScoreFromSelect(img image.Image, musicInformationList []music_info.M
 	return &ScoreSummary{
 		Title:       title,
 		Mode:        mode,
-		Difficult:   NoDifficult, // 選択画面では難易度は取得できない
+		Difficult:   difficult,
 		Score:       score,
 		IsFullCombo: isFullCombo,
 		MaxCombo:    maxCombo,

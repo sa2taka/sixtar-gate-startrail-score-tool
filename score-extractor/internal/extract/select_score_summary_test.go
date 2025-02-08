@@ -32,9 +32,10 @@ func TestExtractScoreSummaryFromSelect(t *testing.T) {
 			want: &ScoreSummary{
 				Title:       findMusicById(candidates, "STARGATE_EXTREME"),
 				Mode:        Solar,
-				Difficult:   NoDifficult,
+				Difficult:   Quasar,
 				Score:       985581,
 				IsFullCombo: false,
+				MaxCombo:    1592,
 			},
 			wantErr: false,
 		},
@@ -44,9 +45,10 @@ func TestExtractScoreSummaryFromSelect(t *testing.T) {
 			want: &ScoreSummary{
 				Title:       findMusicById(candidates, "Full_power_Happy_life"),
 				Mode:        Solar,
-				Difficult:   NoDifficult,
+				Difficult:   Quasar,
 				Score:       998574,
 				IsFullCombo: true,
+				MaxCombo:    1516,
 			},
 			wantErr: false,
 		},

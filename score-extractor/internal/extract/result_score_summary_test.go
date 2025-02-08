@@ -50,7 +50,7 @@ func TestExtractScoreSummaryFromResult(t *testing.T) {
 			name:     "フルコンボのリザルト",
 			filename: "result_pb.jpg",
 			want: &ScoreSummary{
-				Title:     findMusicById(candidates, "Lady_and_Lazy"),
+				Title:     findMusicById(candidates, "Mischievous_Sensation"),
 				Mode:      Solar,
 				Difficult: Quasar,
 				Score:     1000000,
