@@ -34,8 +34,10 @@ type Result struct {
 	Judgments map[string]int `json:"judgments,omitempty"`
 	// フルコンボかどうか
 	IsFullCombo bool `json:"is_full_combo"`
-	// オプション
-	Options []string `json:"options,omitempty"`
+	// パターン
+	Pattern string `json:"pattern,omitempty"`
+	// ハザード
+	Hazard string `json:"hazard,omitempty"`
 	// Base64エンコードされた画像データ（serverモードでのみ使用）
 	ImageBinary string `json:"image_binary,omitempty"`
 }
@@ -67,19 +69,15 @@ func ExtractResult(filePath string, modTime time.Time, musicInfoPath string) (*R
 		return nil, fmt.Errorf("画像からの情報抽出に失敗: %w", err)
 	}
 
-	// オプション情報を文字列のスライスに変換
-	var options []string
-	if summary.Pattern != extract.UnknownPattern && summary.Pattern != extract.DefaultPattern {
-		opt := string(summary.Pattern)
-		if opt != "" {
-			options = append(options, opt)
-		}
+	// パターンとハザードの設定
+	pattern := string(summary.Pattern)
+	if pattern == string(extract.UnknownPattern) || pattern == string(extract.DefaultPattern) {
+		pattern = ""
 	}
-	if summary.Hazard != extract.UnknownHazard && summary.Hazard != extract.DefaultHazard {
-		opt := string(summary.Hazard)
-		if opt != "" {
-			options = append(options, opt)
-		}
+
+	hazard := string(summary.Hazard)
+	if hazard == string(extract.UnknownHazard) || hazard == string(extract.DefaultHazard) {
+		hazard = ""
 	}
 
 	// 判定情報をマップに変換
@@ -124,8 +122,11 @@ func ExtractResult(filePath string, modTime time.Time, musicInfoPath string) (*R
 	if judgments != nil {
 		result.Judgments = judgments
 	}
-	if len(options) > 0 {
-		result.Options = options
+	if pattern != "" {
+		result.Pattern = pattern
+	}
+	if hazard != "" {
+		result.Hazard = hazard
 	}
 
 	return result, nil
@@ -156,11 +157,8 @@ func (r *Result) FormatTSV() string {
 		judgments = "0\t0\t0\t0"
 	}
 
-	// オプションをカンマ区切りの文字列に変換
-	options := strings.Join(r.Options, ",")
-
 	// TSV形式の文字列を生成
-	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%d\t%s\t%v\t%s",
+	return fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%d\t%s\t%v\t%s\t%s",
 		r.FilePath,
 		r.ModTime.Format(time.RFC3339),
 		r.Kind,
@@ -169,7 +167,8 @@ func (r *Result) FormatTSV() string {
 		r.Score,
 		judgments,
 		r.IsFullCombo,
-		options,
+		r.Pattern,
+		r.Hazard,
 	)
 }
 
@@ -187,6 +186,7 @@ func HeaderTSV() string {
 		"YELLOW STAR",
 		"RED STAR",
 		"フルコンボ",
-		"オプション",
+		"パターン",
+		"ハザード",
 	}, "\t")
 }

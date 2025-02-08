@@ -96,8 +96,12 @@ curl http://localhost:6433/api/v1/scores?since=2024-01-01T00:00:00Z
   "file_path": "image.jpg",
   "image_binary": "画像のバイナリのBase64エンコードしたもの",
   "mod_time": "2024-01-01T12:00:00+09:00",
-  "kind": "result",
-  "title": "曲名",
+  "kind": "RESULT",
+  "music": {
+    "id": "id",
+    "name": "曲名"
+    "englishName": "英語の曲名",
+  },
   "difficulty": "MASTER",
   "mode": "STANDARD",
   "score": 980000,
@@ -108,7 +112,8 @@ curl http://localhost:6433/api/v1/scores?since=2024-01-01T00:00:00Z
     "redStar": 0
   },
   "is_full_combo": false,
-  "options": ["MIRROR"]
+  "pattern": "MIRROR",
+  "hazard": "LV3",
 }
 ```
 
