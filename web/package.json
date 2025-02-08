@@ -2,12 +2,14 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "prisma generate && prisma db push && next build",
     "start": "next start",
     "lint": "next lint",
-    "script": "pnpm dotenv -e .env.local -- pnpm tsx"
+    "script": "pnpm dotenv -e .env.local -- pnpm tsx",
+    "prisma-local": "pnpm dotenv -e .env.local -- pnpm dlx prisma"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

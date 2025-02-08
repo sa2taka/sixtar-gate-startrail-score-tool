@@ -59,7 +59,7 @@ enum Difficulty {
   comet
   nova
   supernova
-  quaser
+  quasar
   starlight
   mystic
 }
