@@ -18,6 +18,7 @@ type ScoreSummary struct {
 	Judgement *Judgement // ジャッジ情報
 	// 選択画面固有の情報
 	IsFullCombo bool
+	MaxCombo    int // 選択画面のみで使用
 }
 
 // ExtractScore は画像からスコア情報を抽出します。

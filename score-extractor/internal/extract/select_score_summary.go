@@ -31,11 +31,18 @@ func extractScoreFromSelect(img image.Image, musicInformationList []music_info.M
 		return nil, fmt.Errorf("failed to extract full combo: %w", err)
 	}
 
+	// 最大コンボ数の取得
+	maxCombo, err := ExtractMaxComboFromSelect(img)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract max combo: %w", err)
+	}
+
 	return &ScoreSummary{
 		Title:       title,
 		Mode:        mode,
 		Difficult:   NoDifficult, // 選択画面では難易度は取得できない
 		Score:       score,
 		IsFullCombo: isFullCombo,
+		MaxCombo:    maxCombo,
 	}, nil
 }
