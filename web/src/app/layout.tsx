@@ -1,8 +1,8 @@
+import { AuthButton } from "@/components/auth/auth-button";
+import { Providers } from "@/components/providers";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/providers";
-import { SignInButton } from "@/components/auth/signin-button";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,11 +17,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <Providers>
           <div className="min-h-screen bg-gray-100">
-            <header className="bg-white shadow">
-              <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between">
+            <header className="bg-white shadow w-full">
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between h-16">
                   <h1 className="text-xl font-semibold">SIXTAR GATE STARTRAIL</h1>
-                  <SignInButton />
+                  <AuthButton />
                 </div>
               </div>
             </header>
