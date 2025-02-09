@@ -14,7 +14,6 @@ import (
 	"score_extractor/internal/music_info"
 )
 
-// Result は1つの画像ファイルからの抽出結果を表す
 type Result struct {
 	// ファイルパス
 	FilePath string `json:"file_path"`
@@ -40,6 +39,8 @@ type Result struct {
 	Hazard string `json:"hazard,omitempty"`
 	// Base64エンコードされた画像データ（serverモードでのみ使用）
 	ImageBinary string `json:"image_binary,omitempty"`
+	// 最大コンボ数
+	MaxCombo int `json:"max_combo,omitempty"`
 }
 
 // ExtractResult は画像ファイルから情報を抽出する
@@ -127,6 +128,9 @@ func ExtractResult(filePath string, modTime time.Time, musicInfoPath string) (*R
 	}
 	if hazard != "" {
 		result.Hazard = hazard
+	}
+	if summary.MaxCombo != -1 {
+		result.MaxCombo = summary.MaxCombo
 	}
 
 	return result, nil

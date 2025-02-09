@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Result" ALTER COLUMN "hazard" DROP NOT NULL,
+ALTER COLUMN "pattern" DROP NOT NULL;

@@ -12,9 +12,9 @@ import (
 type Kind string
 
 const (
-	OtherKind   Kind = "Other"
-	Result      Kind = "Result"
-	MusicSelect Kind = "MusicSelect"
+	OtherKind   Kind = "other"
+	Result      Kind = "result"
+	MusicSelect Kind = "select"
 )
 
 const judgeAreaX0Rate = 0.038117 // 73 / 1920

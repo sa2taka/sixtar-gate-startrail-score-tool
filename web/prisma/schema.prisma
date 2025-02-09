@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["typedSql"]
 }
 
 datasource db {
@@ -49,6 +50,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   Result        Result[]
+}
+
+enum Kind {
+  result
+  select
 }
 
 enum MusicType {
@@ -110,17 +116,18 @@ model Result {
   id          String     @id @default(uuid())
   userId      String
   musicId     String
+  kind        String
   type        MusicType
   difficulty  Difficulty
   mode        String
   score       Int
-  blueStar    Int
-  whiteStar   Int
-  yellowStar  Int
-  redStar     Int
+  blueStar    Int?
+  whiteStar   Int?
+  yellowStar  Int?
+  redStar     Int?
   isFullCombo Boolean
-  hazard      Hazard
-  pattern     Pattern
+  hazard      Hazard?
+  pattern     Pattern?
   playedAt    DateTime
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
