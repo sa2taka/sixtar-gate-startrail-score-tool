@@ -1,7 +1,7 @@
+import { $Enums, type Difficulty } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { prisma } from "@/lib/db";
 import musicInfo from "../musicInformation.json";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import { $Enums, Difficulty } from "@prisma/client";
 
 for (const music of musicInfo.songs) {
   await prisma.$transaction(async (prisma) => {
@@ -20,7 +20,9 @@ for (const music of musicInfo.songs) {
       });
 
       for (const [difficulty, data] of Object.entries(music.solar)) {
-        if (!Object.values($Enums.Difficulty).includes(difficulty as Difficulty)) {
+        if (
+          !Object.values($Enums.Difficulty).includes(difficulty as Difficulty)
+        ) {
           console.error(`Invalid difficulty: ${difficulty}, ${music.name}`);
           continue;
         }
@@ -37,7 +39,9 @@ for (const music of musicInfo.songs) {
       }
 
       for (const [difficulty, data] of Object.entries(music.lunar)) {
-        if (!Object.values($Enums.Difficulty).includes(difficulty as Difficulty)) {
+        if (
+          !Object.values($Enums.Difficulty).includes(difficulty as Difficulty)
+        ) {
           console.error(`Invalid difficulty: ${difficulty}, ${music.name}`);
           continue;
         }

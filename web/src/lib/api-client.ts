@@ -1,4 +1,7 @@
-import { convertResultFromFetchData, EditableResultSchema } from "@/model/result";
+import {
+  convertResultFromFetchData,
+  type EditableResultSchema,
+} from "@/model/result";
 
 const getApi = () => {
   return `localhost:6433`;
@@ -16,7 +19,14 @@ export type FetchScoreData = {
     name: string;
     englishName: string | null;
   } | null;
-  difficulty?: "comet" | "nova" | "supernova" | "quasar" | "starlight" | "mystic" | null;
+  difficulty?:
+    | "comet"
+    | "nova"
+    | "supernova"
+    | "quasar"
+    | "starlight"
+    | "mystic"
+    | null;
   mode?: "lunar" | "solar" | null;
   score: number | null;
   judgments?: {
@@ -31,7 +41,9 @@ export type FetchScoreData = {
   max_combo?: number | null;
 };
 
-export const fetchResult = async (since?: Date): Promise<EditableResultSchema[]> => {
+export const fetchResult = async (
+  since?: Date,
+): Promise<EditableResultSchema[]> => {
   const url = new URL(path, getApi());
   if (since) {
     url.searchParams.set("since", since.toISOString());

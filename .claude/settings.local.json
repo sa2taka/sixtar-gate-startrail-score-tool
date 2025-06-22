@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(pnpm:*)",
+      "Bash(cd:*)",
+      "Bash(pnpm exec @biomejs/biome format:*)",
+      "Bash(pnpm format:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm build)"
+    ],
+    "deny": []
+  }
+}

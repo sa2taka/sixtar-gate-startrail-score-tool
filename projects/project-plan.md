@@ -293,7 +293,7 @@ type ScoreData = {
     name: string | null;
     englishName: string | null;
   } | null;
-  difficulty: 'comet' | 'nova' | 'supernova' | 'quaser' | 'starlight' | 'mystic' | null;
+  difficulty: 'comet' | 'nova' | 'supernova' | 'quasar' | 'starlight' | 'mystic' | null;
   mode: 'lunar' | 'solar' | null;
   score: number | null;
   judgments: {

@@ -1,6 +1,10 @@
+import type { FieldPath } from "react-hook-form";
 import { fetchChart } from "@/lib/cached-content";
-import { EditableResultResultSchema, EditableResultSchema, EditableSelectResultSchema } from "@/model/result";
-import { FieldPath } from "react-hook-form";
+import type {
+  EditableResultResultSchema,
+  EditableResultSchema,
+  EditableSelectResultSchema,
+} from "@/model/result";
 
 export type ValidationOption = {
   minimumScore: number;
@@ -9,7 +13,7 @@ export type ValidationOption = {
 
 export const validationResult = async (
   result: EditableResultSchema,
-  option?: ValidationOption
+  option?: ValidationOption,
 ): Promise<{ key: FieldPath<EditableResultSchema>; error: string }[]> => {
   const commonResultErrors = await validationCommonResult(result, option);
   const specificResultErrors =
@@ -21,7 +25,7 @@ export const validationResult = async (
 
 const validationCommonResult = async (
   result: EditableResultSchema,
-  option?: ValidationOption
+  option?: ValidationOption,
 ): Promise<{ key: FieldPath<EditableResultSchema>; error: string }[]> => {
   const errors: { key: FieldPath<EditableResultSchema>; error: string }[] = [];
   if (!result.music) {
@@ -41,14 +45,15 @@ const validationCommonResult = async (
 
 const validationSelectResult = async (
   result: EditableSelectResultSchema,
-  option?: ValidationOption
+  option?: ValidationOption,
 ): Promise<{ key: FieldPath<EditableResultSchema>; error: string }[]> => {
   const errors: { key: FieldPath<EditableResultSchema>; error: string }[] = [];
   if (option?.validatedMaxCombo) {
     if (!result.maxCombo) {
       errors.push({
         key: "music",
-        error: "コンボ数による検証ができませんでした。楽曲情報が問題なければそのままで問題ありません。",
+        error:
+          "コンボ数による検証ができませんでした。楽曲情報が問題なければそのままで問題ありません。",
       });
     }
 
@@ -58,7 +63,8 @@ const validationSelectResult = async (
       if (result.maxCombo !== chart.combo) {
         errors.push({
           key: "music",
-          error: "最大コンボ数が一致しませんでした。楽曲情報が問題なければそのままで問題ありません。",
+          error:
+            "最大コンボ数が一致しませんでした。楽曲情報が問題なければそのままで問題ありません。",
         });
       }
     }
@@ -69,34 +75,52 @@ const validationSelectResult = async (
 
 const validationResultResult = async (
   result: EditableResultResultSchema,
-  option?: ValidationOption
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _option?: ValidationOption,
 ): Promise<{ key: FieldPath<EditableResultSchema>; error: string }[]> => {
   const errors: { key: FieldPath<EditableResultSchema>; error: string }[] = [];
   if (!result.judgments) {
     errors.push({ key: "judgments", error: "判定を入力してください" });
   } else {
     if (result.judgments?.blueStar < 0) {
-      errors.push({ key: "judgments.blueStar", error: "Blue Starの数値が不正です" });
+      errors.push({
+        key: "judgments.blueStar",
+        error: "Blue Starの数値が不正です",
+      });
     } else if (result.judgments?.whiteStar < 0) {
-      errors.push({ key: "judgments.whiteStar", error: "White Starの数値が不正です" });
+      errors.push({
+        key: "judgments.whiteStar",
+        error: "White Starの数値が不正です",
+      });
     } else if (result.judgments?.yellowStar < 0) {
-      errors.push({ key: "judgments.yellowStar", error: "Yellow Starの数値が不正です" });
+      errors.push({
+        key: "judgments.yellowStar",
+        error: "Yellow Starの数値が不正です",
+      });
     } else if (result.judgments?.redStar < 0) {
-      errors.push({ key: "judgments.redStar", error: "Red Starの数値が不正です" });
+      errors.push({
+        key: "judgments.redStar",
+        error: "Red Starの数値が不正です",
+      });
     } else {
       const chart = await fetchChartByResult(result);
 
       const maxCombo =
-        result.judgments.blueStar + result.judgments.whiteStar + result.judgments.yellowStar + result.judgments.redStar;
+        result.judgments.blueStar +
+        result.judgments.whiteStar +
+        result.judgments.yellowStar +
+        result.judgments.redStar;
 
       if (chart && maxCombo !== chart.combo) {
         errors.push({
           key: "music",
-          error: "判定の合計が最大コンボ数と一致しません。楽曲情報、または判定情報を修正してください。",
+          error:
+            "判定の合計が最大コンボ数と一致しません。楽曲情報、または判定情報を修正してください。",
         });
         errors.push({
           key: "judgments.blueStar",
-          error: "判定の合計が最大コンボ数と一致しません。楽曲情報、または判定情報を修正してください。",
+          error:
+            "判定の合計が最大コンボ数と一致しません。楽曲情報、または判定情報を修正してください。",
         });
       }
     }

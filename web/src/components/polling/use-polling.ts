@@ -1,6 +1,6 @@
-import { fetchResult } from "@/lib/api-client";
-import { EditableResultSchema } from "@/model/result";
 import { useEffect } from "react";
+import { fetchResult } from "@/lib/api-client";
+import type { EditableResultSchema } from "@/model/result";
 
 export type PollingProps = {
   duration?: number;

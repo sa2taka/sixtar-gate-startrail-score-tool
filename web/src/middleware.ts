@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 import { auth } from "./lib/auth";
 
 export default auth(async (req: NextRequest) => {
-  if (req.nextUrl.pathname.startsWith("/auth/sign-in") || req.nextUrl.pathname.startsWith("/api/auth")) {
+  if (
+    req.nextUrl.pathname.startsWith("/auth/sign-in") ||
+    req.nextUrl.pathname.startsWith("/api/auth")
+  ) {
     return NextResponse.next();
   }
 

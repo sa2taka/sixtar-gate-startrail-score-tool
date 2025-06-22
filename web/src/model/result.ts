@@ -1,5 +1,5 @@
+import type { $Enums } from "@prisma/client";
 import type { FetchScoreData } from "@/lib/api-client";
-import { $Enums } from "@prisma/client";
 
 export type Difficulty = $Enums.Difficulty;
 export type Pattern = $Enums.Pattern;
@@ -24,7 +24,13 @@ type CommonResultSchema = {
   imageBinary: string;
   modTime: string;
   music: Music;
-  difficulty: "comet" | "nova" | "supernova" | "quasar" | "starlight" | "mystic";
+  difficulty:
+    | "comet"
+    | "nova"
+    | "supernova"
+    | "quasar"
+    | "starlight"
+    | "mystic";
   mode: "lunar" | "solar";
   score: number;
   isFullCombo: boolean;
@@ -45,13 +51,23 @@ export type SelectResultSchema = CommonResultSchema & {
 export type ResultSchema = ResultResultSchema | SelectResultSchema;
 
 type NonOptionalParameters = "filePath" | "imageBinary" | "modTime" | "kind";
-export type EditableResultResultSchema = Pick<ResultSchema, NonOptionalParameters> &
+export type EditableResultResultSchema = Pick<
+  ResultSchema,
+  NonOptionalParameters
+> &
   Partial<Omit<ResultResultSchema, NonOptionalParameters>>;
-export type EditableSelectResultSchema = Pick<ResultSchema, NonOptionalParameters> &
+export type EditableSelectResultSchema = Pick<
+  ResultSchema,
+  NonOptionalParameters
+> &
   Partial<Omit<SelectResultSchema, NonOptionalParameters>>;
-export type EditableResultSchema = EditableResultResultSchema | EditableSelectResultSchema;
+export type EditableResultSchema =
+  | EditableResultResultSchema
+  | EditableSelectResultSchema;
 
-export const convertResultFromFetchData = (data: FetchScoreData): EditableResultSchema => {
+export const convertResultFromFetchData = (
+  data: FetchScoreData,
+): EditableResultSchema => {
   if (data.kind === "result") {
     return {
       filePath: data.file_path,
