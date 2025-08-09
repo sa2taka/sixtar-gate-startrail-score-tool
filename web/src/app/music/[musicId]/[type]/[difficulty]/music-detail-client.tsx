@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Edit } from "lucide-react";
+import { ArrowLeft, Edit } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { MusicInfo, ChartInfo, PlayResult } from "@/types/score";
 import { getScoreRank, formatPlayDate, formatScore } from "@/lib/utils/score-utils";
 import { difficultyColors } from "@/lib/constants/game-constants";
+import { PlayHistoryEditDialog } from "@/components/play-history-edit-dialog/play-history-edit-dialog";
+import type { EditableResultSchema } from "@/model/result";
 
 interface MusicDetailClientProps {
   musicInfo: MusicInfo;
@@ -17,10 +20,105 @@ interface MusicDetailClientProps {
 
 export function MusicDetailClient({ musicInfo, chartInfo, results }: MusicDetailClientProps) {
   const router = useRouter();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<PlayResult | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentResults, setCurrentResults] = useState<PlayResult[]>(results);
 
-  const bestScore = results.length > 0 ? Math.max(...results.map(r => r.score)) : 0;
-  const totalPlays = results.length;
-  const fullComboCount = results.filter(r => r.isFullCombo).length;
+  const bestScore = currentResults.length > 0 ? Math.max(...currentResults.map(r => r.score)) : 0;
+  const totalPlays = currentResults.length;
+  const fullComboCount = currentResults.filter(r => r.isFullCombo).length;
+
+  const handleEditClick = (result: PlayResult) => {
+    setSelectedResult(result);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = async (data: EditableResultSchema) => {
+    if (!selectedResult) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/results/${selectedResult.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          score: data.score,
+          blueStar: data.kind === "result" ? (data as any).judgments?.blueStar : undefined,
+          whiteStar: data.kind === "result" ? (data as any).judgments?.whiteStar : undefined,
+          yellowStar: data.kind === "result" ? (data as any).judgments?.yellowStar : undefined,
+          redStar: data.kind === "result" ? (data as any).judgments?.redStar : undefined,
+          isFullCombo: data.isFullCombo,
+          hazard: data.kind === "result" ? (data as any).hazard : "DEFAULT",
+          pattern: data.kind === "result" ? (data as any).pattern : "DEFAULT",
+          // playedAt: data.playedAtフィールドはEditableResultSchemaに存在しないため削除
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update result");
+      }
+
+      const { result: updatedResult } = await response.json();
+
+      // 楽観的更新: 現在の結果リストを更新
+      setCurrentResults(prevResults => 
+        prevResults.map(r => 
+          r.id === selectedResult.id 
+            ? {
+                ...r,
+                score: updatedResult.score,
+                blueStar: updatedResult.blueStar,
+                whiteStar: updatedResult.whiteStar,
+                yellowStar: updatedResult.yellowStar,
+                redStar: updatedResult.redStar,
+                isFullCombo: updatedResult.isFullCombo,
+                hazard: updatedResult.hazard,
+                pattern: updatedResult.pattern,
+                playedAt: new Date(updatedResult.playedAt),
+                updatedAt: new Date(updatedResult.updatedAt),
+              }
+            : r
+        )
+      );
+
+      setEditDialogOpen(false);
+      setSelectedResult(undefined);
+    } catch (error) {
+      console.error("Error updating result:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (resultId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/results/${resultId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete result");
+      }
+
+      // 楽観的更新: 結果リストから削除
+      setCurrentResults(prevResults => 
+        prevResults.filter(r => r.id !== resultId)
+      );
+
+      setEditDialogOpen(false);
+      setSelectedResult(undefined);
+    } catch (error) {
+      console.error("Error deleting result:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -72,15 +170,7 @@ export function MusicDetailClient({ musicInfo, chartInfo, results }: MusicDetail
             </div>
           )}
         </div>
-        
-        <div className="flex gap-2 mt-4">
-          <Button variant="outline" size="sm" asChild>
-            <a href={musicInfo.link} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              公式サイト
-            </a>
-          </Button>
-        </div>
+
       </div>
 
       {/* プレイ統計 */}
@@ -124,7 +214,7 @@ export function MusicDetailClient({ musicInfo, chartInfo, results }: MusicDetail
           </div>
         </div>
 
-        {results.length === 0 ? (
+        {currentResults.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             プレイ記録がありません
           </div>
@@ -143,7 +233,7 @@ export function MusicDetailClient({ musicInfo, chartInfo, results }: MusicDetail
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.map((result) => {
+                {currentResults.map((result) => {
                   const scoreRank = getScoreRank(result.score);
                   
                   return (
@@ -197,7 +287,12 @@ export function MusicDetailClient({ musicInfo, chartInfo, results }: MusicDetail
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditClick(result)}
+                          disabled={isLoading}
+                        >
                           <Edit className="w-3 h-3" />
                         </Button>
                       </TableCell>
@@ -209,6 +304,16 @@ export function MusicDetailClient({ musicInfo, chartInfo, results }: MusicDetail
           </div>
         )}
       </div>
+
+      {/* 編集ダイアログ */}
+      <PlayHistoryEditDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        result={selectedResult}
+        onSubmit={handleEditSubmit}
+        onDelete={handleDelete}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
