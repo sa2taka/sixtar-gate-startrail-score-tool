@@ -35,8 +35,8 @@ export const validateServerSide = async (
           error: `指定された楽曲「${result.music.name}」の${result.difficulty}難易度は存在しません`,
         });
       } else {
-        // 理論値チェック
-        const theoreticalMaxScore = chart.theoreticalMaxScore;
+        // 理論値チェック（該当フィールドがあれば）
+        const theoreticalMaxScore = (chart as any).theoreticalMaxScore;
         if (result.score && theoreticalMaxScore && result.score > theoreticalMaxScore) {
           errors.push({
             key: "score",
@@ -53,32 +53,34 @@ export const validateServerSide = async (
         }
 
         // コンボ数チェック（リザルト画面かつオプション有効時）
+        const resultData = result as any;
         if (
           result.kind === "result" &&
           option?.validatedMaxCombo &&
-          result.judgments &&
-          chart.maxCombo
+          resultData.judgments &&
+          (chart as any).maxCombo
         ) {
           const totalJudgments =
-            result.judgments.blueStar +
-            result.judgments.whiteStar +
-            result.judgments.yellowStar +
-            result.judgments.redStar;
+            resultData.judgments.blueStar +
+            resultData.judgments.whiteStar +
+            resultData.judgments.yellowStar +
+            resultData.judgments.redStar;
 
-          if (totalJudgments > chart.maxCombo) {
+          if (totalJudgments > (chart as any).maxCombo) {
             errors.push({
               key: "judgments",
-              error: `判定の合計が最大コンボ数（${chart.maxCombo}）を超えています`,
+              error: `判定の合計が最大コンボ数（${(chart as any).maxCombo}）を超えています`,
             });
           }
         }
 
         // 選択画面の最大コンボチェック
-        if (result.kind === "select" && result.maxCombo && chart.maxCombo) {
-          if (result.maxCombo > chart.maxCombo) {
+        const selectData = result as any;
+        if (result.kind === "select" && selectData.maxCombo && (chart as any).maxCombo) {
+          if (selectData.maxCombo > (chart as any).maxCombo) {
             errors.push({
               key: "maxCombo",
-              error: `最大コンボ数が理論値（${chart.maxCombo}）を超えています`,
+              error: `最大コンボ数が理論値（${(chart as any).maxCombo}）を超えています`,
             });
           }
         }
@@ -86,8 +88,9 @@ export const validateServerSide = async (
     }
 
     // フルコンボの整合性チェック（リザルト画面）
-    if (result.kind === "result" && result.judgments) {
-      const isActualFullCombo = result.judgments.redStar === 0;
+    const resultDataForFullCombo = result as any;
+    if (result.kind === "result" && resultDataForFullCombo.judgments) {
+      const isActualFullCombo = resultDataForFullCombo.judgments.redStar === 0;
       if (result.isFullCombo !== isActualFullCombo) {
         errors.push({
           key: "isFullCombo",

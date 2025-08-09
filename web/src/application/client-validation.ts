@@ -34,26 +34,30 @@ export const validateClientSide = (
 
   // 種別固有のバリデーション
   if (result.kind === "result") {
+    // 型ガードを使用してResultSchema型であることを確認
+    const resultData = result as any;
+    
     // リザルト画面の必須項目
-    if (!result.judgments) {
+    if (!resultData.judgments) {
       errors.push({ key: "judgments", error: "判定情報が必要です" });
     } else {
-      if (result.judgments.blueStar < 0) {
+      if (resultData.judgments.blueStar < 0) {
         errors.push({ key: "judgments.blueStar", error: "BLUE STARは0以上で入力してください" });
       }
-      if (result.judgments.whiteStar < 0) {
+      if (resultData.judgments.whiteStar < 0) {
         errors.push({ key: "judgments.whiteStar", error: "WHITE STARは0以上で入力してください" });
       }
-      if (result.judgments.yellowStar < 0) {
+      if (resultData.judgments.yellowStar < 0) {
         errors.push({ key: "judgments.yellowStar", error: "YELLOW STARは0以上で入力してください" });
       }
-      if (result.judgments.redStar < 0) {
+      if (resultData.judgments.redStar < 0) {
         errors.push({ key: "judgments.redStar", error: "RED STARは0以上で入力してください" });
       }
     }
   } else if (result.kind === "select") {
     // 選択画面の必須項目
-    if (result.maxCombo !== undefined && result.maxCombo < 0) {
+    const selectData = result as any;
+    if (selectData.maxCombo !== undefined && selectData.maxCombo < 0) {
       errors.push({ key: "maxCombo", error: "最大コンボ数は0以上で入力してください" });
     }
   }

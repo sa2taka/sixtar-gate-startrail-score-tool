@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +20,7 @@ export type ScoreEditDialogProps = {
   onSkip?: () => void;
   queueLength?: number;
   currentIndex?: number;
+  isLoading?: boolean;
 };
 
 export const ScoreEditDialog = ({
@@ -31,19 +31,17 @@ export const ScoreEditDialog = ({
   onSkip,
   queueLength = 0,
   currentIndex = 0,
+  isLoading = false,
 }: ScoreEditDialogProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: EditableResultSchema) => {
-    setIsSubmitting(true);
     try {
       await onSubmit(data);
       // onSubmit内で次のスコアに進むか、全て完了したらダイアログを閉じる処理が行われる
     } catch (error) {
       console.error("Failed to save score:", error);
       // エラーはEditResultコンポーネント内で処理される
-    } finally {
-      setIsSubmitting(false);
+      throw error;
     }
   };
 
@@ -95,7 +93,7 @@ export const ScoreEditDialog = ({
                   <EditResult
                     defaultValues={scoreData}
                     onSubmit={handleSubmit}
-                    isLoading={isSubmitting}
+                    isLoading={isLoading}
                   />
                 </div>
               </div>
@@ -108,7 +106,7 @@ export const ScoreEditDialog = ({
               <Button
                 variant="outline"
                 onClick={handleSkip}
-                disabled={isSubmitting}
+                disabled={isLoading}
                 size="lg"
               >
                 スキップ

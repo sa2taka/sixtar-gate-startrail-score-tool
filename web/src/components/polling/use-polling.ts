@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchResult } from "@/lib/api-client";
 import type { EditableResultSchema } from "@/model/result";
 
@@ -43,7 +43,17 @@ export const usePolling = ({
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const pollScores = useCallback(async () => {
+  // onFetchData と onError の最新値を保持するref
+  const onFetchDataRef = useRef(onFetchData);
+  const onErrorRef = useRef(onError);
+  
+  // 最新のコールバックを保持
+  useEffect(() => {
+    onFetchDataRef.current = onFetchData;
+    onErrorRef.current = onError;
+  });
+
+  const pollScores = async () => {
     try {
       // ローディング開始
       setStatus(prev => ({ ...prev, isLoading: true, error: null }));
@@ -57,8 +67,8 @@ export const usePolling = ({
         isLoading: false
       }));
 
-      if (data.length > 0) {
-        onFetchData(data);
+      if (data.length > 0 && onFetchDataRef.current) {
+        onFetchDataRef.current(data);
       }
       // データがあってもなくても最終チェック時刻を更新
       const now = new Date();
@@ -73,11 +83,11 @@ export const usePolling = ({
         isLoading: false
       }));
       
-      if (onError) {
-        onError(error instanceof Error ? error : new Error(errorMessage));
+      if (onErrorRef.current) {
+        onErrorRef.current(error instanceof Error ? error : new Error(errorMessage));
       }
     }
-  }, [onFetchData, onError]);
+  };
 
   useEffect(() => {
     if (!enabled) {
@@ -100,7 +110,7 @@ export const usePolling = ({
         intervalRef.current = null;
       }
     };
-  }, [duration, enabled, pollScores]);
+  }, [duration, enabled]);
 
   return status;
 };

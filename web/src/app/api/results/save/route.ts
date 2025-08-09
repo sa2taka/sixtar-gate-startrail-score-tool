@@ -55,7 +55,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 楽曲IDを取得（musicIdが直接ある場合とmusicオブジェクトがある場合に対応）
-    const musicId = typeof body.music === "string" ? body.music : body.music.id;
+    const musicId = typeof body.music === "string" ? body.music : body.music?.id;
+    
+    if (!musicId) {
+      return NextResponse.json(
+        { error: "楽曲IDが指定されていません" },
+        { status: 400 }
+      );
+    }
 
     // Chartの存在確認
     const chart = await prisma.chart.findUnique({
@@ -63,7 +70,7 @@ export async function POST(request: NextRequest) {
         musicId_type_difficulty: {
           musicId: musicId,
           type: body.mode as "solar" | "lunar", // Prismaの型に変換
-          difficulty: body.difficulty,
+          difficulty: body.difficulty as "comet" | "nova" | "supernova" | "quasar" | "starlight" | "mystic",
         },
       },
     });
@@ -86,9 +93,9 @@ export async function POST(request: NextRequest) {
       musicId: musicId,
       kind: body.kind,
       type: body.mode as "solar" | "lunar",
-      difficulty: body.difficulty,
-      mode: body.mode, // mode は文字列フィールド
-      score: body.score,
+      difficulty: body.difficulty as "comet" | "nova" | "supernova" | "quasar" | "starlight" | "mystic",
+      mode: body.mode as "solar" | "lunar", // mode は文字列フィールド
+      score: body.score ?? 0,
       // リザルト画面の場合のみ判定データを保存
       blueStar:
         isResultResult(body) && body.judgments
@@ -118,7 +125,7 @@ export async function POST(request: NextRequest) {
         userId: resultData.userId,
         musicId: resultData.musicId,
         type: resultData.type,
-        difficulty: resultData.difficulty,
+        difficulty: resultData.difficulty as "comet" | "nova" | "supernova" | "quasar" | "starlight" | "mystic",
         playedAt: resultData.playedAt,
       },
     });
