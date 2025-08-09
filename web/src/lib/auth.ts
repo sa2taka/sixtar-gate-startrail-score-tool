@@ -9,11 +9,23 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
     }),
   ],
   callbacks: {
     redirect: async ({ baseUrl }) => {
       return baseUrl;
+    },
+    session: async ({ session, token }) => {
+      session.user.id = token.sub ?? "";
+      return session;
     },
   },
   // NOTE: ref: https://next-auth.js.org/configuration/nextjs#caveats

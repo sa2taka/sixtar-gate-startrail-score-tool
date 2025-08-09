@@ -68,6 +68,7 @@ export type EditableResultSchema =
 export const convertResultFromFetchData = (
   data: FetchScoreData,
 ): EditableResultSchema => {
+  console.log(data)
   if (data.kind === "result") {
     return {
       filePath: data.file_path,

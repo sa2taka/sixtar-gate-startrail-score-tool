@@ -1,8 +1,11 @@
 package fileutil
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -19,6 +22,29 @@ func NewImageFinder(directory string, since time.Time) *ImageFinder {
 		directory: directory,
 		since:     since,
 	}
+}
+
+// extractDateFromFilename はファイル名から日時を抽出する
+func extractDateFromFilename(filename string) (time.Time, error) {
+	// yyyyMMddHHmmss_n.ext の形式から日時部分を抽出
+	re := regexp.MustCompile(`^(\d{14})_\d+\.`)
+	matches := re.FindStringSubmatch(filename)
+	
+	if len(matches) < 2 {
+		return time.Time{}, fmt.Errorf("failed to parse date from filename: %s", filename)
+	}
+	
+	dateStr := matches[1] // yyyyMMddHHmmss
+	
+	// 各部分を抽出
+	year, _ := strconv.Atoi(dateStr[0:4])
+	month, _ := strconv.Atoi(dateStr[4:6])
+	day, _ := strconv.Atoi(dateStr[6:8])
+	hour, _ := strconv.Atoi(dateStr[8:10])
+	minute, _ := strconv.Atoi(dateStr[10:12])
+	second, _ := strconv.Atoi(dateStr[12:14])
+	
+	return time.Date(year, time.Month(month), day, hour, minute, second, 0, time.Local), nil
 }
 
 // Find は指定されたディレクトリから画像ファイルを検索する
@@ -40,10 +66,21 @@ func (f *ImageFinder) Find() ([]string, error) {
 			return nil
 		}
 
-		// 時刻によるフィルタリング
+		// 時刻によるフィルタリング（ファイル名から抽出した日時を使用）
 		if !f.since.IsZero() {
-			fileTime := info.ModTime()
-			if fileTime.Before(f.since) {
+			filename := filepath.Base(path)
+			fileTime, err := extractDateFromFilename(filename)
+			if err != nil {
+				// ファイル名から日時を抽出できない場合はスキップ
+				return nil
+			}
+			
+			// ファイル名から抽出した日時がゼロ値の場合もスキップ
+			if fileTime.IsZero() {
+				return nil
+			}
+			
+			if fileTime.Before(f.since) || fileTime.Equal(f.since) {
 				return nil
 			}
 		}

@@ -72,12 +72,12 @@ func ExtractResult(filePath string, modTime time.Time, musicInfoPath string) (*R
 
 	// パターンとハザードの設定
 	pattern := string(summary.Pattern)
-	if pattern == string(extract.UnknownPattern) || pattern == string(extract.DefaultPattern) {
+	if pattern == string(extract.UnknownPattern) {
 		pattern = ""
 	}
 
 	hazard := string(summary.Hazard)
-	if hazard == string(extract.UnknownHazard) || hazard == string(extract.DefaultHazard) {
+	if hazard == string(extract.UnknownHazard) {
 		hazard = ""
 	}
 

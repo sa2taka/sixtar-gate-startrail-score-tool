@@ -7,7 +7,14 @@
       "Bash(pnpm exec @biomejs/biome format:*)",
       "Bash(pnpm format:*)",
       "Bash(pnpm lint:*)",
-      "Bash(pnpm build)"
+      "Bash(pnpm build)",
+      "Bash(./score_extractor serve:*)",
+      "Bash(./score_extractor:*)",
+      "Bash(go build:*)",
+      "mcp__serena__find_symbol",
+      "mcp__serena__activate_project",
+      "mcp__serena__check_onboarding_performed",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

@@ -4,7 +4,7 @@ import {
 } from "@/model/result";
 
 const getApi = () => {
-  return `localhost:6433`;
+  return `http://localhost:6433`;
 };
 
 const path = "/api/v1/scores";
@@ -42,7 +42,7 @@ export type FetchScoreData = {
 };
 
 export const fetchResult = async (
-  since?: Date,
+  since?: Date | null,
 ): Promise<EditableResultSchema[]> => {
   const url = new URL(path, getApi());
   if (since) {

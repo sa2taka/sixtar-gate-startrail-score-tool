@@ -37,7 +37,7 @@ class ScoreExtractorClient {
   private baseUrl: string;
   private lastCheckTime: Date;
 
-  constructor(baseUrl: string = "http://localhost:8080") {
+  constructor(baseUrl: string = "http://localhost:6433") {
     this.baseUrl = baseUrl;
     this.lastCheckTime = new Date();
   }
@@ -45,9 +45,7 @@ class ScoreExtractorClient {
   async getNewScores(): Promise<ScoreApiResponse[]> {
     const since = this.lastCheckTime.toISOString();
     try {
-      const response = await fetch(
-        `${this.baseUrl}/api/v1/scores?since=${since}`,
-      );
+      const response = await fetch(`${this.baseUrl}/api/v1/scores?since=${since}`);
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -73,9 +71,8 @@ class ScoreExtractorClient {
 }
 
 // データ変換関数
-function convertToEditResultData(
-  apiData: ScoreApiResponse,
-): Partial<EditableResultSchema> {
+function convertToEditResultData(apiData: ScoreApiResponse): Partial<EditableResultSchema> {
+  console.log(apiData);
   // モード変換（score-extractorのmode → Prismaのmode）
   const modeMap: Record<string, "solar" | "lunar"> = {
     star: "solar",
@@ -86,10 +83,7 @@ function convertToEditResultData(
   };
 
   // 難易度変換
-  const difficultyMap: Record<
-    string,
-    "comet" | "nova" | "supernova" | "quasar" | "starlight" | "mystic"
-  > = {
+  const difficultyMap: Record<string, "comet" | "nova" | "supernova" | "quasar" | "starlight" | "mystic"> = {
     comet: "comet",
     nova: "nova",
     supernova: "supernova",
@@ -106,10 +100,7 @@ function convertToEditResultData(
   };
 
   // ハザード変換
-  const hazardMap: Record<
-    string,
-    "DEFAULT" | "LV1" | "LV2" | "LV3" | "DEADEND" | "SUDDEN"
-  > = {
+  const hazardMap: Record<string, "DEFAULT" | "LV1" | "LV2" | "LV3" | "DEADEND" | "SUDDEN"> = {
     "": "DEFAULT",
     LV1: "LV1",
     LV2: "LV2",
@@ -117,7 +108,6 @@ function convertToEditResultData(
     DEADEND: "DEADEND",
     SUDDEN: "SUDDEN",
   };
-
 
   return {
     kind: apiData.kind,
@@ -127,18 +117,18 @@ function convertToEditResultData(
       englishName: apiData.music.englishName || null,
     },
     mode: apiData.mode ? modeMap[apiData.mode] : "solar",
-    difficulty: apiData.difficulty
-      ? difficultyMap[apiData.difficulty]
-      : undefined,
+    difficulty: apiData.difficulty ? difficultyMap[apiData.difficulty] : undefined,
     pattern: patternMap[apiData.pattern || ""],
     hazard: hazardMap[apiData.hazard || ""],
     score: apiData.score,
-    judgments: apiData.judgments ? {
-      blueStar: apiData.judgments.blueStar || 0,
-      whiteStar: apiData.judgments.whiteStar || 0,
-      yellowStar: apiData.judgments.yellowStar || 0,
-      redStar: apiData.judgments.redStar || 0,
-    } : undefined,
+    judgments: apiData.judgments
+      ? {
+          blueStar: apiData.judgments.blueStar || 0,
+          whiteStar: apiData.judgments.whiteStar || 0,
+          yellowStar: apiData.judgments.yellowStar || 0,
+          redStar: apiData.judgments.redStar || 0,
+        }
+      : undefined,
     isFullCombo: apiData.is_full_combo || false,
     maxCombo: apiData.max_combo,
     imageBinary: apiData.image_binary,
@@ -149,8 +139,7 @@ function convertToEditResultData(
 
 export default function EditResultPage() {
   const router = useRouter();
-  const [currentResult, setCurrentResult] =
-    useState<Partial<EditableResultSchema> | null>(null);
+  const [currentResult, setCurrentResult] = useState<Partial<EditableResultSchema> | null>(null);
   const [queue, setQueue] = useState<Partial<EditableResultSchema>[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -257,39 +246,23 @@ export default function EditResultPage() {
         <h1 className="text-2xl font-bold mb-2">スコア編集</h1>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div
-              className={`w-3 h-3 rounded-full ${
-                isConnected ? "bg-green-500" : "bg-red-500"
-              }`}
-            />
+            <div className={`w-3 h-3 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500"}`} />
             <span className="text-sm text-muted-foreground">
               {isConnected ? "score-extractor接続中" : "score-extractor未接続"}
             </span>
           </div>
-          {queue.length > 0 && (
-            <span className="text-sm text-muted-foreground">
-              待機中: {queue.length}件
-            </span>
-          )}
+          {queue.length > 0 && <span className="text-sm text-muted-foreground">待機中: {queue.length}件</span>}
         </div>
       </div>
 
       {currentResult ? (
         <div className="space-y-4">
-          <EditResult
-            defaultValues={currentResult}
-            onSubmit={handleSave}
-            isLoading={isLoading}
-          />
+          <EditResult defaultValues={currentResult} onSubmit={handleSave} isLoading={isLoading} />
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleSkip} disabled={isLoading}>
               スキップ
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/")}
-              disabled={isLoading}
-            >
+            <Button variant="outline" onClick={() => router.push("/")} disabled={isLoading}>
               終了
             </Button>
           </div>
@@ -297,9 +270,7 @@ export default function EditResultPage() {
       ) : (
         <div className="text-center py-12">
           <p className="text-muted-foreground mb-4">
-            {isConnected
-              ? "新しいスコアを待っています..."
-              : "score-extractorに接続できません"}
+            {isConnected ? "新しいスコアを待っています..." : "score-extractorに接続できません"}
           </p>
           <Button onClick={handleManualInput}>手動で入力</Button>
         </div>
