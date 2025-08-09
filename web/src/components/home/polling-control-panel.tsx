@@ -14,28 +14,36 @@ export const PollingControlPanel = ({
   errorMessage 
 }: PollingControlPanelProps) => {
   return (
-    <div className="w-full">
-      <h1 className="text-3xl font-bold mb-4">スコア管理システム</h1>
-      <p className="text-gray-600 mb-6">
-        score-extractorから自動的にスコア情報を取得し、編集・保存します。
-        新しいスコアが検出されると自動的にダイアログが表示されます。
-      </p>
-
-      <div className="flex items-center gap-4 mb-4">
-        <Button
-          onClick={onTogglePolling}
-          variant={pollingEnabled ? "default" : "outline"}
-        >
-          {pollingEnabled ? "ポーリング停止" : "ポーリング開始"}
-        </Button>
-        
-        <div className="text-sm text-gray-500">
-          ポーリング間隔: 30秒
+    <div className="border-t pt-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={onTogglePolling}
+            variant={pollingEnabled ? "default" : "outline"}
+            size="sm"
+          >
+            {pollingEnabled ? "ポーリング停止" : "ポーリング開始"}
+          </Button>
+          
+          <div className="text-sm text-gray-500">
+            ポーリング間隔: 30秒
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div 
+              className={`w-2 h-2 rounded-full ${
+                pollingEnabled ? "bg-green-500" : "bg-gray-300"
+              }`}
+            />
+            <span className="text-sm text-gray-600">
+              {pollingEnabled ? "スコア検出中" : "待機中"}
+            </span>
+          </div>
         </div>
       </div>
 
       {errorMessage && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mt-4">
           <strong>エラー:</strong> {errorMessage}
           <br />
           <span className="text-sm">
