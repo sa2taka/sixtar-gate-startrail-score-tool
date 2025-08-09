@@ -1,60 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { MusicType } from "@prisma/client";
-
-type SortBy = "playedAt" | "score" | "misses";
-type SortOrder = "asc" | "desc";
-
-interface HighscoreData {
-  musicId: string;
-  type: string;
-  difficulty: string;
-  score: number;
-  playedAt: Date;
-  isFullCombo: boolean;
-  misses: number;
-  musicName: string;
-  musicEnglishName: string | null;
-  level: number;
-  notes: number;
-  combo: number;
-}
+import type { HighscoreData } from "@/types/score";
+import { getScoreRank, formatPlayDate, formatScore } from "@/lib/utils/score-utils";
+import { difficultyColors, type SortBy, type SortOrder } from "@/lib/constants/game-constants";
 
 interface ScoreListProps {
   initialData: HighscoreData[];
 }
 
-const difficultyColors = {
-  comet: "bg-green-100 text-green-800",
-  nova: "bg-blue-100 text-blue-800",
-  supernova: "bg-purple-100 text-purple-800",
-  quasar: "bg-orange-100 text-orange-800",
-  starlight: "bg-pink-100 text-pink-800",
-  mystic: "bg-red-100 text-red-800",
-};
-
-const getScoreRank = (score: number) => {
-  if (score >= 995000) return { rank: "995", color: "bg-gradient-to-r from-purple-500 to-pink-500 text-white" };
-  if (score >= 990000) return { rank: "990", color: "bg-gradient-to-r from-blue-500 to-purple-500 text-white" };
-  if (score >= 975000) return { rank: "975", color: "bg-gradient-to-r from-green-500 to-blue-500 text-white" };
-  if (score >= 950000) return { rank: "SS", color: "bg-yellow-400 text-black" };
-  if (score >= 900000) return { rank: "S", color: "bg-yellow-300 text-black" };
-  if (score >= 850000) return { rank: "A", color: "bg-green-200 text-green-800" };
-  if (score >= 800000) return { rank: "B", color: "bg-blue-200 text-blue-800" };
-  if (score >= 700000) return { rank: "C", color: "bg-gray-200 text-gray-800" };
-  return { rank: "D", color: "bg-red-200 text-red-800" };
-};
-
 export function ScoreList({ initialData }: ScoreListProps) {
+  const router = useRouter();
   const [selectedType, setSelectedType] = useState<MusicType | "all">("all");
   const [sortBy, setSortBy] = useState<SortBy>("score");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [highscores] = useState<HighscoreData[]>(initialData);
+
+  const handleRowClick = (item: HighscoreData) => {
+    router.push(`/music/${encodeURIComponent(item.musicId)}/${item.type}/${item.difficulty}`);
+  };
 
   // フィルタリング
   const filteredData = selectedType === "all" 
@@ -72,6 +42,9 @@ export function ScoreList({ initialData }: ScoreListProps) {
         break;
       case "playedAt":
         compareValue = new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime();
+        break;
+      case "musicName":
+        compareValue = a.musicName.localeCompare(b.musicName);
         break;
     }
     return sortOrder === "desc" ? -compareValue : compareValue;
@@ -104,6 +77,7 @@ export function ScoreList({ initialData }: ScoreListProps) {
               <SelectItem value="score">スコア順</SelectItem>
               <SelectItem value="playedAt">プレイ順</SelectItem>
               <SelectItem value="misses">ミス数順</SelectItem>
+              <SelectItem value="musicName">曲名順</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -135,7 +109,11 @@ export function ScoreList({ initialData }: ScoreListProps) {
             {sortedData?.map((item) => {
               const scoreRank = getScoreRank(item.score);
               return (
-                <TableRow key={`${item.musicId}-${item.type}-${item.difficulty}`} className="cursor-pointer hover:bg-gray-50">
+                <TableRow 
+                  key={`${item.musicId}-${item.type}-${item.difficulty}`} 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleRowClick(item)}
+                >
                   <TableCell className="font-medium">
                     <div>
                       <div>{item.musicName}</div>
@@ -155,7 +133,7 @@ export function ScoreList({ initialData }: ScoreListProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="font-mono">
-                    {item.score.toLocaleString()}
+                    {formatScore(item.score)}
                   </TableCell>
                   <TableCell>
                     <Badge className={scoreRank.color}>
@@ -171,12 +149,7 @@ export function ScoreList({ initialData }: ScoreListProps) {
                   </TableCell>
                   <TableCell>{item.misses}</TableCell>
                   <TableCell className="text-sm text-gray-500">
-                    {new Date(item.playedAt).toLocaleDateString("ja-JP", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatPlayDate(item.playedAt)}
                   </TableCell>
                 </TableRow>
               );
