@@ -6,7 +6,6 @@ import { PollingControlPanel } from "@/components/home/polling-control-panel";
 import { ScoreList } from "@/components/home/score-list";
 import { ScoreDistribution } from "@/components/home/score-distribution";
 import { PlayActivityCalendar } from "@/components/home/play-activity-calendar";
-import { PersonalBestStats } from "@/components/home/personal-best-stats";
 import { HazardStats } from "@/components/home/hazard-stats";
 import { usePollingControl } from "@/hooks/use-polling-control";
 
@@ -37,14 +36,6 @@ interface PlayActivityData {
   count: number;
 }
 
-interface PersonalBestData {
-  totalPBs: number;
-  averageScore: number;
-  highestScore: number;
-  lowestScore: number;
-  fullComboCount: number;
-  fullComboRate: number;
-}
 
 interface HazardData {
   hazard: string;
@@ -58,11 +49,10 @@ interface HomeClientProps {
   highscores: HighscoreData[];
   scoreDistribution: ScoreDistributionData[];
   playActivity: PlayActivityData[];
-  personalBest: PersonalBestData;
   hazardStats: HazardData[];
 }
 
-export function HomeClient({ initialLastDate, highscores, scoreDistribution, playActivity, personalBest, hazardStats }: HomeClientProps) {
+export function HomeClient({ initialLastDate, highscores, scoreDistribution, playActivity, hazardStats }: HomeClientProps) {
   const pollingControl = usePollingControl();
 
   return (
@@ -81,11 +71,10 @@ export function HomeClient({ initialLastDate, highscores, scoreDistribution, pla
         </div>
 
         {/* 統計セクション */}
-        {(scoreDistribution.length > 0 || playActivity.length > 0 || personalBest.totalPBs > 0 || hazardStats.some(h => h.count > 0)) && (
+        {(scoreDistribution.length > 0 || playActivity.length > 0 || hazardStats.some(h => h.count > 0)) && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <ScoreDistribution data={scoreDistribution} />
             <PlayActivityCalendar data={playActivity} />
-            <PersonalBestStats data={personalBest} />
             <HazardStats data={hazardStats} />
           </div>
         )}

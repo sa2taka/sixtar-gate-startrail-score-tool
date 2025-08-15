@@ -27,14 +27,6 @@ export default async function Home() {
         highscores={[]} 
         scoreDistribution={[]}
         playActivity={[]}
-        personalBest={{
-          totalPBs: 0,
-          averageScore: 0,
-          highestScore: 0,
-          lowestScore: 0,
-          fullComboCount: 0,
-          fullComboRate: 0,
-        }}
         hazardStats={[]}
       />
     );
@@ -241,27 +233,6 @@ export default async function Home() {
     };
   });
 
-  // PB統計を計算
-  const pbCount = scoreDistribution.find(d => d.rank === 'PB')?.count || 0;
-  const totalScores = scoreDistribution.reduce((sum, d) => sum + d.count, 0);
-  const averageScore = totalScores > 0 
-    ? Math.round(scoreDistributionRaw.reduce((sum, d) => sum + (d.minScore * d.count), 0) / totalScores)
-    : 0;
-  const highestScore = scoreDistributionRaw.length > 0 
-    ? Math.max(...scoreDistributionRaw.map(d => d.minScore))
-    : 0;
-  const lowestScore = scoreDistributionRaw.length > 0 
-    ? Math.min(...scoreDistributionRaw.map(d => d.minScore))
-    : 0;
-
-  const personalBest = {
-    totalPBs: pbCount,
-    averageScore,
-    highestScore,
-    lowestScore,
-    fullComboCount: 0, // このデータは別途取得が必要
-    fullComboRate: 0, // このデータは別途取得が必要
-  };
 
   return (
     <HomeClient 
@@ -269,7 +240,6 @@ export default async function Home() {
       highscores={highscores}
       scoreDistribution={scoreDistribution}
       playActivity={playActivity}
-      personalBest={personalBest}
       hazardStats={hazardStats}
     />
   );
