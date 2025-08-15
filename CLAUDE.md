@@ -48,6 +48,39 @@ pnpm format:check
 cd web && pnpm lint . --fix
 ```
 
+## Next.js App Router Best Practices
+
+### Server Components (RSC) でのデータ取得
+- **デフォルトでServer Componentsを使用**: App Routerでは全てのコンポーネントがデフォルトでServer Component
+- **データベース直接アクセス**: Server ComponentsではPrismaを使って直接DBクエリが可能（APIレイヤー不要）
+- **async/await構文**: Server Componentsはasync関数として定義でき、useEffectやuseState不要
+- **自動的な静的生成**: fetch結果は自動的にキャッシュされ、ビルド時に静的生成される
+
+### パフォーマンス最適化
+- **並列データフェッチ**: 複数のデータ取得は並列実行し、ウォーターフォールを避ける
+- **Suspenseでストリーミング**: 遅いデータ取得にはSuspenseを使い、段階的にHTMLを送信
+- **自動リクエストメモ化**: 同じfetchリクエストは自動的にメモ化される
+
+### 実装パターン
+```typescript
+// app/page.tsx - Server Component
+export default async function Page() {
+  // 直接Prismaでデータ取得（APIルート不要）
+  const [results, lastScore, statistics] = await Promise.all([
+    prisma.result.findMany({ where: { userId } }),
+    prisma.result.findFirst({ orderBy: { playedAt: 'desc' } }),
+    getStatistics()
+  ]);
+  
+  return <ClientComponent data={results} />;
+}
+```
+
+### キャッシング戦略
+- **デフォルト静的レンダリング**: ビルド時にプリレンダリング
+- **動的レンダリング**: `{ cache: 'no-store' }` でオプトイン
+- **再検証**: `{ next: { revalidate: 60 } }` で時間ベースの再検証
+
 ## Architecture
 
 ### Score Extraction Pipeline
