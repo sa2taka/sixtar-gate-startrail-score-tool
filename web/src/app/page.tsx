@@ -79,6 +79,7 @@ export default async function Home() {
           AND r.difficulty = c.difficulty
         INNER JOIN "Music" m ON r."musicId" = m.id
         WHERE r."userId" = ${session.user.id}
+          AND r.difficulty IN ('quasar', 'starlight')
       )
       SELECT 
         "musicId",
@@ -123,12 +124,14 @@ export default async function Home() {
               MAX(score) as max_score
             FROM "Result"
             WHERE "userId" = ${session.user.id}
+              AND difficulty IN ('quasar', 'starlight')
             GROUP BY "musicId", type, difficulty
           ) max_scores ON r."musicId" = max_scores."musicId" 
             AND r.type = max_scores.type 
             AND r.difficulty = max_scores.difficulty 
             AND r.score = max_scores.max_score
           WHERE r."userId" = ${session.user.id}
+            AND r.difficulty IN ('quasar', 'starlight')
         )
         SELECT 
           rank,
@@ -158,6 +161,7 @@ export default async function Home() {
         FROM "Result" r
         WHERE r."userId" = ${session.user.id}
           AND r."playedAt" >= NOW() - INTERVAL '365 days'
+          AND r.difficulty IN ('quasar', 'starlight')
         GROUP BY DATE(r."playedAt"::timestamp AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Tokyo')
         ORDER BY date
       `,
@@ -173,12 +177,14 @@ export default async function Home() {
             MAX(score) as max_score
           FROM "Result"
           WHERE "userId" = ${session.user.id}
+            AND difficulty IN ('quasar', 'starlight')
           GROUP BY "musicId", type, difficulty
         ) max_scores ON r."musicId" = max_scores."musicId" 
           AND r.type = max_scores.type 
           AND r.difficulty = max_scores.difficulty 
           AND r.score = max_scores.max_score
         WHERE r."userId" = ${session.user.id}
+          AND r.difficulty IN ('quasar', 'starlight')
         GROUP BY r.hazard
         ORDER BY count DESC
       `
